@@ -1,0 +1,22 @@
+#!/usr/bin/nodejs
+
+require('dotenv').config();
+
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  debugger;
+  // application specific logging, throwing an error, or other logic here
+});
+
+(async () => {
+  
+  var debug = require('debug')('my-application');
+  var app = await require('../app');
+
+  app.set('port', process.env.PORT || 3000);
+
+  var server = app.listen(app.get('port'), function() {
+    debug('Express server listening on port ' + server.address().port);
+  });
+
+})();

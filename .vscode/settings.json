@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.html": "ejs"
+    },
+    "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\bash.exe",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/rethinkdb_data": true
+    }
+}

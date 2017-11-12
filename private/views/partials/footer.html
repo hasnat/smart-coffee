@@ -1,0 +1,9 @@
+
+<!-- END OF CONTENT -->
+<% if (typeof applicationServerKey !== 'undefined') { %>
+        <script src="./base64url-arraybuffer.js"></script>
+        <script>window.applicationServerKey = base64url.decode("<%= applicationServerKey %>")</script>
+<% } %>
+        <script src="./app.js" async></script>
+    </body>
+</html>
