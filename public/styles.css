@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css?family=Open+Sans|Ruda');
+@import url('https://fonts.googleapis.com/css?family=Ruda');
 
 * {
   box-sizing: border-box;
@@ -19,7 +19,6 @@ html {
   background-color: #221815;
   position: relative;
   
-  font-family: 'Open Sans', sans-serif;
   font-family: 'Ruda', sans-serif;
 }
 
