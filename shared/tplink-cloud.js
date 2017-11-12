@@ -95,15 +95,23 @@
         }
 
         async passthrough(module, action, deviceId) {
-            try {
-                return (await this.request("passthrough", {
-                    deviceId: deviceId || this.deviceId,
-                    requestData: JSON.stringify({[module]: {[action]: {}}})
-                })).responseData[module][action];
-            } catch (err) {
-                console.error(err);
-                return null;
-            }
+            const result = (await this.request("passthrough", {
+                deviceId: deviceId || this.deviceId,
+                requestData: JSON.stringify({[module]: {[action]: {}}})
+            }));
+            
+            if (!("responseData" in result))
+                throw new Error(`result does not contain property "responseData"`);
+            
+            const response = JSON.parse(result.responseData);
+
+            if (!(module in response))
+                throw new Error(`responseData does not contain property "${module}"`);
+                
+            if (!(action in response[module]))
+                throw new Error(`responseData.${module} does not contain property "${action}"`);
+
+            return response[module][action];
         }
     }
 

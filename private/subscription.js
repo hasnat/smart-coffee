@@ -77,6 +77,26 @@ module.exports = (async () => {
             delete result.id;
             return Object.assign(new this, result);
         }
+                
+        /**
+         * 
+         * @param {string} domain
+         * @returns {Subscription[]}
+         */
+        static async allByDomain(domain) {
+            const results = (await r.table("subscriptions")
+                                   .filter({domain: domain})
+                                   .run(db))
+                                   .toArray();
+            
+            for (let i = 0; i < results.length; i++) {
+                // id is a readonly-property so it must be unset
+                delete results[i].id;
+                results[i] = Object.assign(new this, results[i]);
+            }
+
+            return results;
+        }
 
     }
     

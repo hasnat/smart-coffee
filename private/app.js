@@ -5,10 +5,13 @@ module.exports = (async () => {
     const logger = require('morgan');
     const cookieParser = require('cookie-parser');
     const bodyParser = require('body-parser');
+    const CoffeeMaker = await require('./coffeemaker');
 
     const app = express();
     
     app.set('db', await require('./db'));
+
+    CoffeeMaker.startListening();
 
     // view engine setup
     app.set('views', path.join(__dirname, 'views'));
