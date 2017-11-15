@@ -39,11 +39,10 @@ module.exports = (async () => {
                 lastPowerOff: null
             };
 
-            delete properties.cloud;
             Object.assign(this, properties);
 
             /** @type {TpLink.Cloud} */
-            this.cloud = Object.assign(new TpLink.Cloud, properties.cloud || {});
+            this.cloud = Object.assign(new TpLink.Cloud, this.cloud || {});
             
         }
 
