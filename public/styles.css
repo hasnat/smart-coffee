@@ -11,27 +11,26 @@ html, body {
 }
 
 html {
-  height: 100%;
   font-size: 16px;
   background-image: url(images/bg2.jpg);
   background-size: cover;
   background-position: center center;
   background-color: #221815;
-  position: relative;
+  height: 100%;
   
   font-family: 'Ruda', sans-serif;
 }
 
 html:before {
   content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, .6);
+  background: rgba(0, 0, 0, .8);
   z-index: -1;
 }
 
@@ -95,14 +94,6 @@ form * {
   outline: none;
 }
 
-input[type=radio] {
-  display: none;
-}
-
-input[type=radio]:checked + label {
-  display: none;
-}
-
 button, .button {
   background: #998a77;
   white-space: nowrap;
@@ -146,12 +137,6 @@ label > span {
   font-size: 12px;
 }
 
-label.button > * {
-  line-height: 36px;
-  padding: 0;
-  font-size: inherit;
-}
-
 input[type=text], input[type=password], input[type=email], select {
   display: block;
   box-shadow: rgba(0, 0, 0, 0.15) 0 1px 3px;
@@ -174,4 +159,51 @@ input[type=text]:disabled, input[type=password]:disabled, input[type=email]:disa
 input:focus {
   border: rgba(255, 255, 255, .26) 1px solid;
   box-shadow: rgba(0, 0, 0, 0.25) 0 1px 4px;
+}
+
+#subscribe-event-list > label {
+  user-select: none;
+  cursor: pointer;
+}
+
+#subscribe-event-list > label > input {
+  display: none;
+}
+#subscribe-event-list > label > * {
+  vertical-align: middle;
+}
+
+#subscribe-event-list > label > span:before {
+  content: ' ';
+  display: inline-block;
+  width: 24px;
+  border-radius: 2px;
+  height: 24px;
+  line-height: 24px;
+  margin-right: 8px;
+  text-align: center;
+  background: rgba(20, 16, 12, .95);
+  box-shadow: inset rgba(0, 0, 0, .22) 0 1px 10px;
+}
+
+#subscribe-event-list > label > span:before {
+  content: '\2714';
+  color: transparent;
+}
+
+#subscribe-event-list > label > span:hover:before {
+  color: #353130;
+}
+
+#subscribe-event-list > label:active > span:before {
+  box-shadow: inset rgba(0, 0, 0, .30) 0 3px 15px;
+}
+
+#subscribe-event-list > label > input:checked + span:before {
+  color: #689c16;
+}
+
+#subscribe-event-list > label > input:checked + span:hover:before {
+  color: #81c21a;
+  text-shadow: rgba(0, 0, 0, .25) 0 1px 2px;
 }

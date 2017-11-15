@@ -8,27 +8,16 @@ module.exports = (async () => {
      */
     class Subscription {
 
-        constructor() {
+        constructor(domain) {
             
             /** @type {string} */
-            this.domain = null;
+            this.domain = domain;
             
             /** @type {string} */
             this.endpoint = null;
 
             /** @type {object} */
             this.keys = {};
-
-            /**
-             * Additional properties for json serialization
-             * How in the world can I jsdoc this??!?!?!??!?!??!
-             */
-            Object.defineProperties(this, {
-                id: {
-                    get: () => this.keys.auth,
-                    enumerable: true // this is essential for JSON encoding & decoding
-                }
-            });
             
         }
         
@@ -37,9 +26,10 @@ module.exports = (async () => {
          * @returns {boolean}
          */
         async save() {
-            return (await r.table("subscriptions")
-                           .insert(this)
-                           .run(db)).inserted === 1;
+            const result = await r.table("subscriptions")
+                                  .insert(this, {conflict: "update"})
+                                  .run(db);
+            return result.inserted === 1 || result.updated === 1;
         }
 
         /**
@@ -47,10 +37,11 @@ module.exports = (async () => {
          * @returns {boolean}
          */
         async delete() {
-            return (await r.table("subscriptions")
-                           .get(this.id)
-                           .delete()
-                           .run(db)).deleted === 1;
+            const result = await r.table("subscriptions")
+                                  .get(this.id)
+                                  .delete()
+                                  .run(db);
+            return result.deleted === 1;
         }
 
         /**
@@ -73,8 +64,6 @@ module.exports = (async () => {
             if (!result)
                 return null;
             
-            // id is a readonly-property so it must be unset
-            delete result.id;
             return Object.assign(new this, result);
         }
                 
@@ -90,8 +79,6 @@ module.exports = (async () => {
                                    .toArray();
             
             for (let i = 0; i < results.length; i++) {
-                // id is a readonly-property so it must be unset
-                delete results[i].id;
                 results[i] = Object.assign(new this, results[i]);
             }
 

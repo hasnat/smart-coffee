@@ -18,14 +18,46 @@
         return;
     }
 
-    if (await Notification.requestPermission() !== 'granted') {
-        alert("You have disabled notifications");
-        return;
-    }
-
     class App {
         constructor(serviceWorkerRegistration) {
             this.registration = serviceWorkerRegistration;
+            //document.addEventListener("DOMContentLoaded", async () => {
+                this.main();
+            //});
+        }
+
+        async main() {
+            
+            let form = document.querySelector('#notifications');
+            let chkNotifications = form.querySelectorAll('input');
+            const submit = async () => {
+                // get the notification names as an array
+                const notifications = [].map.call(chkNotifications, (x)=>x.checked && x.name).filter(x=>x);
+                if (notifications.length > 0) {
+                    if (await Notification.requestPermission() !== 'granted') {
+                        alert("You have disabled notifications");
+                        return;
+                    }
+                }
+                await this.notifications.subscribe(notifications);
+            };
+        
+            // hook event listeners
+            for (let i = 0; i < chkNotifications.length; i++) {
+                chkNotifications[i].addEventListener('change', submit);
+            }
+        
+            const subscription = await this.notifications.subscribe();
+            subscription.notifications = subscription.notifications || [];
+            
+            // update current status
+            for (let i = 0; i < chkNotifications.length; i++) {
+                const x = chkNotifications[i];
+                x.checked = subscription.notifications.indexOf(x.name) !== -1;
+            }
+        
+            form.disabled = false;
+
         }
         
         get notifications() {
@@ -33,22 +65,44 @@
             var app = this;
             
             return {
-                getSubscription: async () => {
-                    return await pushManager.getSubscription();
-                },
-                subscribe: async () => {
-                    return await app.post('/subscriptions/', await pushManager.getSubscription() || await pushManager.subscribe({
+                /** @type {PushSubscription} */
+                getSubscription: async function () {
+                    return await pushManager.getSubscription() || await pushManager.subscribe({
                         userVisibleOnly: true,
                         applicationServerKey: window.applicationServerKey
-                    }));
+                    });
                 },
-                unsubscribe: async() => {
-                    let subscription = await pushManager.getSubscription();
-                    
-                    if (subscription && !await subscription.unsubscribe())
-                        throw new Error("Failed to unsubscribe!");
-                    
-                    return await app.delete('/subscriptions/', subscription || {});
+                subscribe: async function (notifications) {
+
+                    const sub = await this.getSubscription();
+
+                    // serialize && deserialize to get the keys
+                    const data = JSON.parse(JSON.stringify(sub));
+
+                    // set the key as id
+                    data.id = data && data.keys && data.keys.auth;
+
+                    if (typeof notifications !== 'undefined') {
+
+                        let unsubscribe = true;
+
+                        Object.keys(notifications).map((key) => {
+                            unsubscribe &= !notifications[key];
+                        });
+
+                        if (unsubscribe && sub)
+                            await sub.unsubscribe();
+                        
+                        data.notifications = notifications;
+
+                    }
+
+                    const response = await app.post('/subscriptions/', data);
+
+                    return await response.json();
+                },
+                unsubscribe: async function () {
+                    return await this.subscribe([]);
                 }
             };
         }
@@ -62,6 +116,16 @@
         }
 
         async request (method, url, data) {
+            if (data instanceof FormData) {
+                return await fetch("/api" + url, {
+                    method: method,
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    body: data
+                });
+            }
+
             return await fetch("/api" + url, {
                 method: method,
                 headers: {

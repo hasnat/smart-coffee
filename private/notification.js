@@ -14,9 +14,8 @@ module.exports = (async() => {
 
     class Notification {
 
-        constructor() {
-
-
+        constructor(attributes) {
+            Object.assign(this, attributes);
         }
 
         /**
