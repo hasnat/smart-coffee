@@ -26,9 +26,6 @@ module.exports = (async () => {
                 coldStartThresholdSeconds: 900,
                 kwhPerCup: 0.0136
             };
-
-            /** @type {TpLink.Cloud} */
-            this.cloud = null;
             
             /** @type {object} */
             this.state = {
@@ -42,9 +39,11 @@ module.exports = (async () => {
                 lastPowerOff: null
             };
 
-            Object.assign(this, properties || {});
-            if (typeof this.cloud === 'object' && Object.getPrototypeOf(this.cloud).constructor.name === 'Object')
-                this.cloud = Object.assign(new TpLink.Cloud, this.cloud);
+            delete properties.cloud;
+            Object.assign(this, properties);
+
+            /** @type {TpLink.Cloud} */
+            this.cloud = Object.assign(new TpLink.Cloud, properties.cloud || {});
             
         }
 
