@@ -48,15 +48,8 @@
     </form>
 </aside>
 <script src="./shared/tplink-cloud.js"></script>
-<% } %>
-
 <script>
-document.querySelector('#subscribe-1').addEventListener('change', (e) => {
-    app.notifications.subscribe();
-});
-document.querySelector('#subscribe-0').addEventListener('change', (e) => {
-    app.notifications.unsubscribe();
-});
+
 
 var tp = new TpLink.Cloud;
 var select = document.querySelector('#cloud-config-device');
@@ -97,6 +90,16 @@ document.querySelector("#cloud-config-save").addEventListener('click', async (e)
     await window.app.post('/coffeemakers/', {
         cloud: tp
     });
+});
+</script>
+<% } %>
+
+<script>
+document.querySelector('#subscribe-1').addEventListener('change', (e) => {
+    app.notifications.subscribe();
+});
+document.querySelector('#subscribe-0').addEventListener('change', (e) => {
+    app.notifications.unsubscribe();
 });
 </script>
 <%- include('partials/footer.html') %>
