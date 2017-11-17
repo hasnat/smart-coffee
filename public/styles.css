@@ -176,34 +176,54 @@ input:focus {
 #subscribe-event-list > label > span:before {
   content: ' ';
   display: inline-block;
-  width: 24px;
+  width: 16px;
   border-radius: 2px;
-  height: 24px;
-  line-height: 24px;
+  height: 16px;
+  line-height: 16px;
   margin-right: 8px;
+  font-size: 16px;
   text-align: center;
-  background: rgba(20, 16, 12, .95);
-  box-shadow: inset rgba(0, 0, 0, .22) 0 1px 10px;
-}
-
-#subscribe-event-list > label > span:before {
+  border: #689c16 2px solid;
+  border-radius: 3px;
   content: '\2714';
   color: transparent;
+  transition-timing-function: ease-out;
+  transition-duration: .2s;
+  transition-property: transform, background-color;
+  box-shadow: rgba(0, 0, 0, .1) 0 1px 7px;
 }
 
-#subscribe-event-list > label > span:hover:before {
-  color: #353130;
+#subscribe-event-list > label > span:after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(162, 255, 0, .06);
+  transform: translateY(-100%) scale(0);
+  z-index: -1;
+  transition-timing-function: ease-out;
+  transition-duration: .2s;
+  transition-property: transform, opacity;
+  opacity: 0;
 }
 
-#subscribe-event-list > label:active > span:before {
-  box-shadow: inset rgba(0, 0, 0, .30) 0 3px 15px;
+#subscribe-event-list > label:active > span:after {
+  opacity: 1;
+  transform: translateY(-100%) scale(2);
 }
 
 #subscribe-event-list > label > input:checked + span:before {
-  color: #689c16;
+  background-color: #689c16;
+  color: #fff;
 }
 
 #subscribe-event-list > label > input:checked + span:hover:before {
-  color: #81c21a;
+  color: #a2ff00;
   text-shadow: rgba(0, 0, 0, .25) 0 1px 2px;
+}
+
+#subscribe-event-list > label > input + span:hover {
+  color: #e5c19d;
 }

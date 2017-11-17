@@ -7,12 +7,11 @@ module.exports = (async () => {
   /* GET home page. */
   router.get('/', async (req, res) => {
 
-    const domain = req.headers.host.split(':')[0];
-
-    const coffeeMaker =  await CoffeeMaker.find(domain) || Object.assign(new CoffeeMaker, {domain: domain});
+    const coffeeMaker =  new CoffeeMaker({domain: req.host});
+    coffeeMaker.reload();
 
     res.render('index', {
-      title: domain,
+      title: coffeeMaker.domain,
       applicationServerKey: process.env.VAPID_PUBLIC_KEY,
       showConfig: req.query.config || !await coffeeMaker.exists(),
       coffeeMaker: coffeeMaker

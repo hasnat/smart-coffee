@@ -12,11 +12,6 @@
         alert("Sorry, your browser is not supported");
         return;
     }
-    
-    if (typeof Notification === 'undefined') {
-        alert("Sorry, your browser is not supported");
-        return;
-    }
 
     class App {
         constructor(serviceWorkerRegistration) {
@@ -30,16 +25,21 @@
             
             let form = document.querySelector('#notifications');
             let chkNotifications = form.querySelectorAll('input');
-            const submit = async () => {
-                // get the notification names as an array
-                const notifications = [].map.call(chkNotifications, (x)=>x.checked && x.name).filter(x=>x);
-                if (notifications.length > 0) {
-                    if (await Notification.requestPermission() !== 'granted') {
-                        alert("You have disabled notifications");
-                        return;
-                    }
+            const app = this;
+            const submit = async function () {
+                if (typeof Notification === 'undefined') {
+                    alert("Valitettavasti selaimesi ei tue ilmoituksia!");
+                    return;
+                } else if (await Notification.requestPermission() !== 'granted') {
+                    alert("Olet estänyt ilmoitukset!");
+                    return;
                 }
-                await this.notifications.subscribe(notifications);
+                
+                if (this.checked) {
+                    await app.notifications.subscribe(this.value);
+                } else {
+                    await app.notifications.unsubscribe(this.value);
+                }
             };
         
             // hook event listeners
@@ -47,13 +47,13 @@
                 chkNotifications[i].addEventListener('change', submit);
             }
         
-            const subscription = await this.notifications.subscribe();
-            subscription.notifications = subscription.notifications || [];
-            
-            // update current status
-            for (let i = 0; i < chkNotifications.length; i++) {
-                const x = chkNotifications[i];
-                x.checked = subscription.notifications.indexOf(x.name) !== -1;
+            const subscription = await this.notifications.status();
+            if (subscription) {
+                // update current status
+                for (let i = 0; i < chkNotifications.length; i++) {
+                    const x = chkNotifications[i];
+                    x.checked = subscription.events.indexOf(x.value) !== -1;
+                }
             }
         
             form.disabled = false;
@@ -65,50 +65,58 @@
             var app = this;
             
             return {
-                /** @type {PushSubscription} */
-                getSubscription: async function () {
-                    return await pushManager.getSubscription() || await pushManager.subscribe({
+                status: async function () {
+                    // Get existing subscription
+                    const subscription = await pushManager.getSubscription();
+                    
+                    if (!subscription)
+                        return null;
+                    
+                    const response = await app.post(`/subscriptions/`, subscription);
+                    
+                    // If got no content, let's use the one we just sent
+                    if (response.status === 204) {
+                        subscription.events = [];
+                        return subscription;
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (!result.events)
+                        await subscription.unsubscribe();
+
+                    return result;
+                },
+                subscribe: async function (event) {
+                    // Get existing subscription or create new
+                    const subscription = await pushManager.getSubscription() || await pushManager.subscribe({
                         userVisibleOnly: true,
                         applicationServerKey: window.applicationServerKey
                     });
+
+                    const response = await app.put(`/subscriptions/${event}`, subscription);
+
+                    return response.status === 204;
                 },
-                subscribe: async function (notifications) {
+                unsubscribe: async function (event) {
+                    const subscription = await pushManager.getSubscription();
+                    
+                    if (!subscription)
+                        throw new Error("Already unsubscribed from all events");
 
-                    const sub = await this.getSubscription();
-
-                    // serialize && deserialize to get the keys
-                    const data = JSON.parse(JSON.stringify(sub));
-
-                    // set the key as id
-                    data.id = data && data.keys && data.keys.auth;
-
-                    if (typeof notifications !== 'undefined') {
-
-                        let unsubscribe = true;
-
-                        Object.keys(notifications).map((key) => {
-                            unsubscribe &= !notifications[key];
-                        });
-
-                        if (unsubscribe && sub)
-                            await sub.unsubscribe();
-                        
-                        data.notifications = notifications;
-
-                    }
-
-                    const response = await app.post('/subscriptions/', data);
-
-                    return await response.json();
-                },
-                unsubscribe: async function () {
-                    return await this.subscribe([]);
+                    const response = await app.delete(`/subscriptions/${event}`, subscription);
+                    
+                    return response.status === 204;
                 }
             };
         }
         
         async post (url, data) {
             return await this.request('POST', url, data);
+        }
+        
+        async put (url, data) {
+            return await this.request('PUT', url, data);
         }
         
         async delete (url, data) {

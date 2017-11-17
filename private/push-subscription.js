@@ -3,22 +3,68 @@ module.exports = (async () => {
 
     const {db, r} = await require('./db');
 
+/**
+ * const notification = new Notification({
+          title: "Successfully subscribed",
+          icon: "/images/notification.jpg",
+          body: "You'll stay updated about the coffee status"
+        });
+        await notification.sendTo([subscription]);
+ */
+
     /**
      * A class to represent the client PushSubscription object
      */
-    class Subscription {
+    class PushSubscription {
 
-        constructor(domain) {
+        constructor({id, domain, endpoint, keys: {auth, p256dh}, events}) {
             
+            /** @type {string} */
+            this.id = id || (endpoint && endpoint.substr(-32)) || undefined;
+
             /** @type {string} */
             this.domain = domain;
             
             /** @type {string} */
-            this.endpoint = null;
+            this.endpoint = endpoint;
 
             /** @type {object} */
-            this.keys = {};
+            this.keys = {
+                /** @type {string} */
+                auth,
+
+                /** @type {string} */
+                p256dh
+            };
+
+            this.events = events || [];
             
+        }
+
+        on(event) {
+            if (this.events.indexOf(event) === -1)
+                this.events.push(event);
+            
+            return this;
+        }
+        
+        off(event) {
+            const index = this.events.indexOf(event);
+            if (index !== -1)
+                this.events.splice(index, 1);
+            
+            return this;
+        }
+
+        /**
+         * Whether the object looks like it should be casted to PushSubscription
+         * @param {object} o 
+         * @returns {boolean}
+         */
+        static shouldCast(o) {
+            return (typeof o === 'object')
+                && ("endpoint" in o)
+                && ("keys" in o);
         }
         
         /**
@@ -49,7 +95,21 @@ module.exports = (async () => {
          * @returns {boolean}
          */
         async exists() {
-            return (await this.constructor.find(this.id)) !== null;
+            return await this.constructor.find(this.id) !== null;
+        }
+
+        /**
+         * Reloads the data from the database using id
+         * @returns {this}
+         */
+        async reload() {
+            const result = await r.table("subscriptions")
+                                  .get(this.id || '')
+                                  .run(db);
+            if (!result)
+                this;
+
+            return Object.assign(this, result);
         }
 
         /**
@@ -64,7 +124,7 @@ module.exports = (async () => {
             if (!result)
                 return null;
             
-            return Object.assign(new this, result);
+            return new this(result);
         }
                 
         /**
@@ -79,7 +139,7 @@ module.exports = (async () => {
                                    .toArray();
             
             for (let i = 0; i < results.length; i++) {
-                results[i] = Object.assign(new this, results[i]);
+                results[i] = new this(results[i]);
             }
 
             return results;
@@ -87,6 +147,6 @@ module.exports = (async () => {
 
     }
     
-    return Subscription;
+    return PushSubscription;
 
 })();

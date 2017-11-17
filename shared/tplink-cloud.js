@@ -11,7 +11,10 @@
 
     class TpLinkCloud {
     
-        constructor (token, email, deviceId, appServerUrl) {
+        constructor ({alias, token, email, deviceId, appServerUrl}) {
+            /** @type {string} */
+            this.alias = alias;
+
             /** @type {string} */
             this.token = token;
 
@@ -23,6 +26,12 @@
             
             /** @type {string} */
             this.appServerUrl = appServerUrl;
+        }
+
+        static shouldCast(o) {
+            return (typeof o === 'object')
+                && ("token" in o)
+                && ("email" in o);
         }
 
         /**

@@ -4,7 +4,7 @@ module.exports = (async () => {
     const { EventEmitter } = require("events");
     const {db, r} = await require('./db');
     const TpLink = require('../shared/tplink-cloud.js');
-    const Subscription = await require('./subscription');
+    const PushSubscription = await require('./push-subscription');
     const Notification = await require('./notification');
 
     /** @type {Object.<string, int>} */
@@ -15,10 +15,9 @@ module.exports = (async () => {
 
     class CoffeeMaker {
 
-        constructor(properties) {
-
+        constructor({domain, calibration, state, cloud}) {
             /** @type {string} */
-            this.domain = null;
+            this.domain = domain;
 
             /** @type {object} */
             this.calibration = {
@@ -26,9 +25,12 @@ module.exports = (async () => {
                 coldStartThresholdSeconds: 900,
                 kwhPerCup: 0.0136
             };
+
+            if (calibration)
+                Object.assign(this.calibration, calibration);
             
             /** @type {object} */
-            this.state = {
+            this.state = state || {
                 /** @type {object} */
                 start: null,
 
@@ -39,11 +41,33 @@ module.exports = (async () => {
                 lastPowerOff: null
             };
 
-            Object.assign(this, properties);
-
             /** @type {TpLink.Cloud} */
-            this.cloud = Object.assign(new TpLink.Cloud, this.cloud || {});
+            this.cloud = new TpLink.Cloud(cloud || {});
             
+        }
+
+        /**
+         * Whether the object looks like it should be casted to CoffeeMaker
+         * @param {object} o 
+         * @returns {boolean}
+         */
+        static shouldCast(o) {
+            return (typeof o === 'object')
+                && ("cloud" in o);
+        }
+
+        /**
+         * Reloads the data from the database using id
+         * @returns {this}
+         */
+        async reload() {
+            const result = await r.table("configs")
+                                  .get(this.domain || '')
+                                  .run(db);
+            if (!result)
+                this;
+
+            return Object.assign(this, result);
         }
 
         getEventEmitter() {
@@ -106,7 +130,7 @@ module.exports = (async () => {
         /**
          * 
          * @param {string} domain 
-         * @returns {Subscription}
+         * @returns {PushSubscription}
          */
         static async find(domain) {
             const result = await r.table("configs")
@@ -182,7 +206,7 @@ module.exports = (async () => {
         }
 
         async getSubscriptions() {
-            return await Subscription.allByDomain(this.domain);
+            return await PushSubscription.allByDomain(this.domain);
         }
 
         static async stopListening() {

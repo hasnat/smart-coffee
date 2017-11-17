@@ -4,7 +4,6 @@ module.exports = (async () => {
     const favicon = require('static-favicon');
     const logger = require('morgan');
     const cookieParser = require('cookie-parser');
-    const bodyParser = require('body-parser');
     const CoffeeMaker = await require('./coffeemaker');
 
     const app = express();

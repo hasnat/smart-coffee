@@ -1,7 +1,7 @@
 module.exports = (async() => {
 
     const webpush = require('web-push');
-    const Subscription = await require('./subscription');
+    const PushSubscription = await require('./push-subscription');
     //const base64url = require('base64url').default;
     //const MoccaMaster = require('./coffeemaker');
 
@@ -20,7 +20,7 @@ module.exports = (async() => {
 
         /**
          * 
-         * @param {Subscription[]} subscriptions 
+         * @param {PushSubscription[]} subscriptions 
          */
         async sendTo(subscriptions) {
             if (!subscriptions)
