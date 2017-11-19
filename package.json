@@ -1,24 +1,29 @@
 {
-  "name": "application-name",
+  "name": "kofeiini.fi",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "nodejs ./bin/www"
+    "start": "node --nolazy -r @std/esm -r dotenv/config ./bin/www",
+    "debug": "node --nolazy -r @std/esm -r dotenv/config --inspect-brk=5858 ./bin/www"
+  },
+  "@std/esm": {
+    "esm": "all"
   },
   "dependencies": {
+    "@std/esm": "^0.16.0",
     "body-parser": "~1.0.0",
-    "cookie-parser": "~1.0.1",
     "debug": "~0.7.4",
     "dotenv": "^4.0.0",
     "ejs": "^2.5.7",
-    "events": "^1.1.1",
+    "event-emitter-es6": "^1.1.5",
     "express": "~4.0.0",
-    "fs-extra": "^4.0.2",
     "morgan": "~1.0.0",
     "node-fetch": "^1.7.3",
-    "rethinkdb": "^2.3.3",
-    "static-favicon": "~1.0.0",
-    "tplink-smarthome-api": "^0.20.1",
+    "rethinkdbdash": "^2.3.31",
     "web-push": "^3.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.53",
+    "@types/rethinkdbdash": "github:types/rethinkdbdash"
   }
 }

@@ -9,6 +9,8 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
-        "**/rethinkdb_data": true
-    }
+        "**/rethinkdb_data": true,
+        "**/.esm-cache": true
+    },
+    "editor.tabSize": 4
 }

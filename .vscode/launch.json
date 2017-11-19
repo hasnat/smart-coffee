@@ -10,10 +10,12 @@
             "protocol": "inspector",
             "useWSL": true,
             "name": "Launch Program",
+            "runtimeExecutable": "npm",
             "runtimeArgs": [
-                "private/bin/www",
-                "private/bootstrap.js"
-            ]
+                "run-script", "debug"
+            ],
+            "port": 5858,
+            "sourceMaps": false
         }
     ]
 }

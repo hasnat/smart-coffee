@@ -1,0 +1,20 @@
+#!/usr/bin/nodejs
+
+import app from '../app';
+import modelInit from '../models/__init';
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    debugger;
+    // application specific logging, throwing an error, or other logic here
+});
+
+app.set('port', process.env.PORT || 3000);
+
+modelInit.then(() => {
+    
+    var server = app.listen(app.get('port'), function() {
+        console.debug('Express server listening on port ' + server.address().port);
+    });
+
+});

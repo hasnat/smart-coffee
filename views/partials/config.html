@@ -1,0 +1,39 @@
+<aside>
+    <form spellcheck="false" autocomplete="off" id="cloud-config">
+        <h3>
+            Cloud configuration
+        </h3>
+
+        <label>
+            <span>Domain:</span>
+            <input type="text" id="cloud-config-domain" disabled value="<%= coffeeMaker.domain %>">
+        </label>
+
+        <label>
+            <span>TP-Link Cloud email</span>
+            <input type="text" id="cloud-config-email" value="<%= coffeeMaker.cloud.email %>">
+        </label>
+
+        <label>
+            <span>TP-Link Cloud password <sup title="Your password will never be passed to our servers">?</sup></span>
+            <input type="password" id="cloud-config-password">
+        </label>
+
+        <button type="button" id="cloud-config-list-devices">Find my coffee</button>
+
+        <label>
+            <span>TP-Link Cloud device <sup title="Please select the device your coffee maker is plugged into">?</sup></span>
+            <select name="device" id="cloud-config-device" disabled>
+            <% if (coffeeMaker.cloud.alias) { %>
+                <option value=""><%- coffeeMaker.cloud.alias %></option>
+            <% } else { %>
+                <option value="">Please fill in the credentials</option>
+            <% } %>
+            </select>
+        </label>
+
+        <button type="button" id="cloud-config-save">Save the configuration</button>
+
+    </form>
+</aside>
+<script type="module" src="./config.js"></script>
