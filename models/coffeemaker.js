@@ -57,7 +57,7 @@ export default class CoffeeMaker extends ActiveRecord {
     get domain() { return this.__data.domain; }
     
     /** @type {TpLinkCloud} */
-    get cloud() { return this.__data.domain; }
+    get cloud() { return this.__data.cloud; }
     
     /**  @type {CoffeeMakerCalibration} */
     get calibration() { return this.__data.calibration; }
