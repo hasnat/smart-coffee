@@ -1,7 +1,5 @@
 import r from '../r';
 
-const tableList = r.tableList().run();
-
 export default class ActiveRecord {
 
     constructor(props, opts) {
@@ -83,7 +81,7 @@ export default class ActiveRecord {
     }
     
     /**
-     * @returns {Promise<ActiveRecord>}
+     * @returns {Promise<this>}
      */
     async reload() {
         const id = this[this.constructor.primaryKey];
