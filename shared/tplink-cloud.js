@@ -2,6 +2,17 @@
 
 import jsonApi from "./json-api.js";
 
+/**
+ * @global
+ * @typedef TpLinkEmeterState
+ * @property {number} current
+ * @property {number} voltage
+ * @property {number} power
+ * @property {number} total
+ * @property {number} cups
+ * @property {number} err_code
+ */
+
 export default class TpLinkCloud {
 
     constructor (props = {}) {
@@ -108,5 +119,17 @@ export default class TpLinkCloud {
             throw new Error(`responseData.${module} does not contain property "${action}"`);
 
         return response[module][action];
+    }
+
+    /**
+     * @returns {Promise<TpLinkEmeterState>}
+     */
+    async getEmeterStatus() {
+        let result = await this.passthrough("emeter", "get_realtime");
+        
+        if (typeof result !== 'object')
+            throw new Error("Failed to get the emeter status");
+        
+        return result;
     }
 }

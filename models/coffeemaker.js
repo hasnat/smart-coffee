@@ -24,16 +24,6 @@ let events = {};
  */
 
 /**
- * @typedef TpLinkEmeterState
- * @property {number} current
- * @property {number} voltage
- * @property {number} power
- * @property {number} total
- * @property {number} cups
- * @property {number} err_code
- */
-
-/**
  * @typedef CoffeeMakerState
  * @property {Date} lastPowerOff
  * @property {TpLinkEmeterState} previous
@@ -98,18 +88,6 @@ export default class CoffeeMaker extends ActiveRecord {
     }
 
     /**
-     * @returns {Promise<TpLinkEmeterState>}
-     */
-    async getEmeterStatus() {
-        let result = await this.cloud.passthrough("emeter", "get_realtime");
-        
-        if (typeof result !== 'object')
-            throw new Error("Failed to get the emeter status");
-        
-        return result;
-    }
-
-    /**
      * Checks whether currently doing a cold start
      */
     isColdStart() {
@@ -150,7 +128,7 @@ export default class CoffeeMaker extends ActiveRecord {
     async updateStatus () {
         let state;
         try {
-            state = await this.getEmeterStatus();
+            state = await this.cloud.getEmeterStatus();
         } catch (err) {
             console.error(err);
             return;

@@ -1,4 +1,5 @@
 import http from "../http.js";
+const { fetch, Response, Headers } = http;
 
 export default class JsonApi {
     /**
@@ -7,13 +8,12 @@ export default class JsonApi {
      * @param {string} url 
      * @param {object} [body]
      * @param {object} [options]
-     * @returns {Promise<http.Response>}
+     * @returns {Promise<Response>}
      */
     static async request(method, url, body, options) {
         const opts = {
             method: method,
-            //headers: {"Accept": "application/json"},
-            headers: {}
+            headers: {"Accept": "application/json; q=1, *.*; q=0.9"},
         };
 
         if (typeof body === 'object' && body !== null) {
@@ -24,14 +24,14 @@ export default class JsonApi {
         if (typeof options === 'object' && options !== null)
             Object.assign(opts, options);
         
-        return await http.fetch(url, opts);
+        return await fetch(url, opts);
     }
     
     /**
      * 
      * @param {string} url 
      * @param {object} [options]
-     * @returns {Promise<http.Response>}
+     * @returns {Promise<Response>}
      */
     static async get(url, options) {
         return await this.request('GET', url);
@@ -42,7 +42,7 @@ export default class JsonApi {
      * @param {string} url 
      * @param {object} [data]
      * @param {object} [options]
-     * @returns {Promise<http.Response>}
+     * @returns {Promise<Response>}
      */
     static async post(url, data, options) {
         return await this.request('POST', url, data, options);
@@ -53,7 +53,7 @@ export default class JsonApi {
      * @param {string} url 
      * @param {object} [data]
      * @param {object} [options]
-     * @returns {Promise<http.Response>}
+     * @returns {Promise<Response>}
      */
     static async put(url, data, options) {
         return this.request('PUT', url, data, options);
@@ -64,7 +64,7 @@ export default class JsonApi {
      * @param {string} url 
      * @param {object} [data]
      * @param {object} [options]
-     * @returns {Promise<http.Response>}
+     * @returns {Promise<Response>}
      */
     static delete(url, data, options) {
         return this.request('DELETE', url, data, options);
