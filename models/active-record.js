@@ -55,6 +55,9 @@ export default class ActiveRecord {
         return this.__meta.isNew;
     }
     
+    set(attributes) {
+        Object.assign(this.__data, attributes || {});
+    }
     
     /**
      * Deletes the record from the database
@@ -69,7 +72,7 @@ export default class ActiveRecord {
      * @returns {Promise<void>}
      */
     static async delete(id) {
-        await this.query().get(id).delete().run();
+        id && await this.query().get(id).delete().run();
     }
 
     /**
@@ -80,36 +83,24 @@ export default class ActiveRecord {
         await this.constructor.query().insert(this.toJSON(), {conflict: "update"});
     }
     
-    /**
-     * @returns {Promise<this>}
-     */
-    async reload() {
-        const id = this[this.constructor.primaryKey];
-        if (id) {
-            const row = await this.constructor.query().get(id).run();
-            if (row) {
-                Object.assign(this.__data, row);
-                this.__meta.isNew = false;
-            }
-        }
-
-        return this;
-    }
-    
     static query(opts) {
         return r.table(this.table, opts);
     }
 
     /**
      * @param {string|number} id
-     * @returns {Promise<ActiveRecord>}
+     * @returns {Promise<any>}
      */
     static async get(id) {
-        return new this(await this.query().get(id).run(), { isNew: false });
+        if (!id)
+            return undefined;
+        
+        const row = await this.query().get(id).run();
+        return row && new this(row, { isNew: false });
     }
     
     /**
-     * @returns {Promise<ActiveRecord[]>}
+     * @returns {Promise<any[]>}
      */
     static async getAll() {
         let all = [];
@@ -121,7 +112,7 @@ export default class ActiveRecord {
     }
     
     /**
-     * @returns {Promise<ActiveRecord[]>}
+     * @returns {Promise<any[]>}
      */
     static async findAll(predicate, opts) {
         let all = [];
@@ -133,7 +124,7 @@ export default class ActiveRecord {
     }
     
     /**
-     * @returns {Promise<ActiveRecord>}
+     * @returns {Promise<any>}
      */
     static async find(predicate, opts) {
         const cursor = await this.query(opts).filter(predicate).run();
@@ -157,11 +148,14 @@ export default class ActiveRecord {
         }
     }
 
+    /**
+     * 
+     * @param {Object} props 
+     * @returns {Promise<any>} props 
+     */
     static async findOrNew(props) {
-        const newInstance = new this(props);
-        await newInstance.reload();
-
-        return newInstance;
+        const obj = new this(props);
+        return (obj[this.primaryKey] && await this.get(obj[this.primaryKey])) || obj;
     }
 
 }

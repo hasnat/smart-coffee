@@ -200,18 +200,25 @@ input:focus {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: rgba(162, 255, 0, .06);
+    background-color: rgba(50, 70, 10, .16);
     transform: translateY(-100%) scale(0);
     z-index: -1;
     transition-timing-function: ease-out;
     transition-duration: .2s;
-    transition-property: transform, opacity;
+    transition-property: filter, transform, opacity;
     opacity: 0;
 }
 
 #subscribe-event-list > label:active > span:after {
     opacity: 1;
     transform: translateY(-100%) scale(2);
+    filter: blur(.5px);
+}
+
+#subscribe-event-list > label > input.waiting + span:after {
+    opacity: 0.25;
+    transform: translateY(-100%) scale(3);
+    filter: blur(2px);
 }
 
 #subscribe-event-list > label > input:checked + span:before {

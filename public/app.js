@@ -37,11 +37,15 @@ class App {
             return;
         }
         
+        element.classList.add('waiting');
+
         if (element.checked) {
             await this.notifications.subscribe(element.value);
         } else {
             await this.notifications.unsubscribe(element.value);
         }
+        
+        element.classList.remove('waiting');
     }
 
     async main() {
@@ -54,13 +58,12 @@ class App {
             checkboxes[i].addEventListener('change', function() { app.propagateNotificationSubscription(this); });
         }
     
-        const subscription = await this.notifications.status();
-        if (subscription) {
-            // update current status
-            for (let i = 0; i < checkboxes.length; i++) {
-                const x = checkboxes[i];
-                x.checked = subscription.events && subscription.events.indexOf(x.value) !== -1;
-            }
+        await this.notifications.sync();
+
+        // update current status
+        for (let i = 0; i < checkboxes.length; i++) {
+            const x = checkboxes[i];
+            x.checked = this.notifications.subscribed(x.value);
         }
 
     }

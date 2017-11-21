@@ -72,7 +72,7 @@ export default class TpLinkCloud {
 
     /**
      * Fetch the device list
-     * @returns {Promise<{deviceId: string, alias: string, appServerUrl}[]>}
+     * @returns {Promise<{deviceId: string, alias: string, appServerUrl: string, deviceModel: string}[]>}
      */
     async getDeviceList() {
         return (await this.request('getDeviceList')).deviceList;

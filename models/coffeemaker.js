@@ -33,8 +33,8 @@ export default class CoffeeMaker extends ActiveRecord {
 
     constructor(props, opts) {
         props = props || {};
-        if ("cloud" in props && !(props.cloud instanceof TpLinkCloud))
-            props.cloud = new TpLinkCloud(props.cloud);
+        if (!(props.cloud instanceof TpLinkCloud))
+            props.cloud = new TpLinkCloud(props.cloud || {});
         
         super(props, opts);
     }

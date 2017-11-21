@@ -1,14 +1,24 @@
 import TpLinkCloud from "../shared/tplink-cloud.js";
 import jsonApi from "../shared/json-api.js";
 
-var tp = new TpLinkCloud;
-var select = document.querySelector('#cloud-config-device');
-var txtEmail = document.querySelector('#cloud-config-email');
-var txtPassword = document.querySelector('#cloud-config-password');
+let tp = new TpLinkCloud;
+/** @type {HTMLInputElement} */
+let select = document.querySelector('#cloud-config-device');
+/** @type {HTMLInputElement} */
+let txtEmail = document.querySelector('#cloud-config-email');
+/** @type {HTMLInputElement} */
+let txtPassword = document.querySelector('#cloud-config-password');
 
 document.querySelector("#cloud-config-list-devices").addEventListener('click', async (e) => {
     e.preventDefault();
-    await tp.login(txtEmail.value, txtPassword.value);
+    
+    try {
+        await tp.login(txtEmail.value, txtPassword.value);
+    } catch (err) {
+        alert("Kirjautuminen epäonnistui!");
+        return;
+    }
+
     let devices = [];
     (await tp.getDeviceList()).forEach((device) => {
         // only HS110 supported as of now (no other models with eMeter exist)
@@ -38,7 +48,10 @@ document.querySelector("#cloud-config-save").addEventListener('click', async (e)
         tp.appServerUrl = device.appServerUrl;
     }
 
-    await jsonApi.post('/api/coffeemakers/', {
+    if (txtEmail.value && !tp.email)
+        tp.email = txtEmail.value;
+
+    await jsonApi.put('/api/coffeemakers/', {
         cloud: tp
     });
 });

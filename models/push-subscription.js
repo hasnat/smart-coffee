@@ -52,8 +52,16 @@ export default class PushSubscription extends ActiveRecord {
     }
     
     /**
+     * Subscription expiration time (?)
+     * @type {string|Date}
+     */
+    get expirationTime() {
+        return this.__data.expirationTime;
+    }
+    
+    /**
      * Encryption keys
-     * @type {Object<string, string>}
+     * @type {{auth: string, p256dh: string}}
      */
     get keys() {
         return this.__data.keys;
@@ -71,28 +79,29 @@ export default class PushSubscription extends ActiveRecord {
         return this.__data.events;
     }
 
-    subscribe(event) {
+    /**
+     * Subscribe to a notification event & save
+     * @param {string} event 
+     */
+    async subscribe(event) {
         if (this.events.indexOf(event) === -1)
             this.events.push(event);
-        return this;
+
+        // Save to the db
+        await this.save();
     }
     
-    unsubscribe(event) {
+    /**
+     * Unsubscribe form a notification event & save
+     * @param {string} event 
+     */
+    async unsubscribe(event) {
         const index = this.events.indexOf(event);
         if (index !== -1)
             this.events.splice(index, 1);
-        return this;
-    }
-
-    /**
-     * Whether the object looks like it should be casted to PushSubscription
-     * @param {object} o 
-     * @returns {boolean}
-     */
-    static shouldCast(o) {
-        return (typeof o === 'object')
-            && ("endpoint" in o)
-            && ("keys" in o);
+            
+        // Save to the db
+        await this.save();
     }
 
 }

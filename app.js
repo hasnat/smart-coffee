@@ -1,8 +1,7 @@
 import express from 'express';
 import logger from "morgan";
 import CoffeeMaker from './models/coffeemaker';
-import siteRoutes from './routes/index';
-import apiRoutes from './routes/api';
+import routes from './routes';
 import ejs from 'ejs';
 import r from './r';
 
@@ -15,11 +14,7 @@ app.set('view engine', 'html');
 
 app.use(logger('dev'));
 
-app.use(express.static('./public'));
-app.use('/shared', express.static('./shared'));
-
-app.use('/', siteRoutes);
-app.use('/api/', apiRoutes);
+app.use('/', routes);
 
 /// catch 404 and forwarding to error handler
 app.use((req, res, next) => {

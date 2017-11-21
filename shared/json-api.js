@@ -13,7 +13,7 @@ export default class JsonApi {
     static async request(method, url, body, options) {
         const opts = {
             method: method,
-            headers: {"Accept": "application/json; q=1, *.*; q=0.9"},
+            headers: {},
         };
 
         if (typeof body === 'object' && body !== null) {
@@ -23,6 +23,10 @@ export default class JsonApi {
         
         if (typeof options === 'object' && options !== null)
             Object.assign(opts, options);
+        
+        // Cast to Headers object (not sure if necessary)
+        if (!(opts.headers instanceof Headers))
+            opts.headers = new Headers(opts.headers);
         
         return await fetch(url, opts);
     }
@@ -34,7 +38,7 @@ export default class JsonApi {
      * @returns {Promise<Response>}
      */
     static async get(url, options) {
-        return await this.request('GET', url);
+        return await this.request('GET', url, undefined, options);
     }
     
     /**
