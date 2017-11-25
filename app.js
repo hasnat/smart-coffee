@@ -1,9 +1,9 @@
 import express from 'express';
-import logger from "morgan";
 import CoffeeMaker from './models/coffeemaker';
 import routes from './routes';
 import ejs from 'ejs';
 import r from './r';
+import models from './models';
 
 const app = express();
 
@@ -11,8 +11,6 @@ const app = express();
 app.set('views', './views');
 app.engine('html', ejs.renderFile);
 app.set('view engine', 'html');
-
-app.use(logger('dev'));
 
 app.use('/', routes);
 
@@ -47,6 +45,22 @@ app.use((err, req, res, next) => {
         error: {},
         title: "Ooops..."
     });
+});
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    debugger;
+    // application specific logging, throwing an error, or other logic here
+});
+
+app.set('port', process.env.PORT || 3000);
+
+models.then(() => {
+    
+    var server = app.listen(app.get('port'), function() {
+        console.debug('Express server listening on port ' + server.address().port);
+    });
+
 });
 
 export default app;

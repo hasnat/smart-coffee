@@ -3,23 +3,18 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node --nolazy -r @std/esm -r dotenv/config ./bin/www",
-    "debug": "node --nolazy -r @std/esm -r dotenv/config --inspect-brk=5858 ./bin/www"
-  },
-  "@std/esm": {
-    "esm": "all"
+    "start": "node --nolazy --experimental-modules --loader ./esm-loader.mjs -r dotenv/config ./app.js",
+    "debug": "node --nolazy --experimental-modules --loader ./esm-loader.mjs -r dotenv/config --inspect-brk=9229 ./app.js"
   },
   "dependencies": {
-    "@std/esm": "^0.16.0",
     "body-parser": "~1.0.0",
-    "debug": "~0.7.4",
     "dotenv": "^4.0.0",
     "ejs": "^2.5.7",
     "event-emitter-es6": "^1.1.5",
     "express": "~4.0.0",
-    "morgan": "~1.0.0",
     "node-fetch": "^1.7.3",
     "rethinkdbdash": "^2.3.31",
+    "urlsafe-base64": "^1.0.0",
     "web-push": "^3.2.4"
   },
   "devDependencies": {

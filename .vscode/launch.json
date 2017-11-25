@@ -9,13 +9,14 @@
             "request": "launch",
             "protocol": "inspector",
             "useWSL": true,
-            "name": "Launch Program",
+            "name": "Launch via NPM",
             "runtimeExecutable": "npm",
             "runtimeArgs": [
                 "run-script", "debug"
             ],
-            "port": 5858,
-            "sourceMaps": false
+            "port": 9229,
+            "sourceMaps": false,
+            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
