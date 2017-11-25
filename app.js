@@ -1,5 +1,11 @@
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    debugger;
+    // application specific logging, throwing an error, or other logic here
+});
+
 import express from 'express';
-import CoffeeMaker from './models/coffeemaker';
 import routes from './routes';
 import ejs from 'ejs';
 import r from './r';
@@ -45,12 +51,6 @@ app.use((err, req, res, next) => {
         error: {},
         title: "Ooops..."
     });
-});
-
-process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    debugger;
-    // application specific logging, throwing an error, or other logic here
 });
 
 app.set('port', process.env.PORT || 3000);

@@ -1,20 +1,10 @@
-import EventEmitter from "event-emitter-es6";
 import ActiveRecord from './active-record';
 import TpLinkCloud from '../shared/tplink-cloud.js';
 import PushSubscription from './push-subscription';
 import Notification from './notification';
 
-/** @type {Object.<string, NodeJS.Timer>} */
-let timers = {};
-
-/** @type {Object.<string, EventEmitter>} */
-let events = {};
-
-/*calibration = {
-    coldStartCompensationKwh: 0.004,
-    coldStartThresholdSeconds: 900,
-    kwhPerCup: 0.0136
-};*/
+/** @type {Object<string, NodeJS.Timer>} */
+const timers = {};
 
 /**
  * @typedef CoffeeMakerCalibration
@@ -36,12 +26,38 @@ export default class CoffeeMaker extends ActiveRecord {
         if (!(props.cloud instanceof TpLinkCloud))
             props.cloud = new TpLinkCloud(props.cloud || {});
         
+        if (!props.calibration) {
+            props.calibration = Object.assign({
+                coldStartCompensationKwh: 0.004,
+                coldStartThresholdSeconds: 900,
+                kwhPerCup: 0.0136
+            }, props.calibration || {});
+        }
+
+        if (!props.state) {
+            props.state = {
+                previous: {},
+                start: {},
+                lastPowerOff: null
+            };
+        }
+        
         super(props, opts);
     }
     
     static get table() { return "configs"; }
     
     static get primaryKey() { return "domain"; }
+
+    /**
+     * Called after all models have been booted
+     * @returns {Promise}
+     */
+    static async afterBoot() {
+        await super.afterBoot();
+        console.log("calling start listening..");
+        await this.startListening()
+    }
     
     /** @type {string} */
     get domain() { return this.__data.domain; }
@@ -56,38 +72,6 @@ export default class CoffeeMaker extends ActiveRecord {
     get state() { return this.__data.state; }
 
     /**
-     * Whether the object looks like it should be casted to CoffeeMaker
-     * @param {object} o 
-     * @returns {boolean}
-     */
-    static shouldCast(o) {
-        return (typeof o === 'object')
-            && ("cloud" in o)
-            && ("domain" in o);
-    }
-
-    /**
-     * @return {EventEmitter}
-     */
-    getEventEmitter() {
-        if (!this.domain)
-            throw new Error("No domain set!");
-    
-        if (!(this.domain in events))
-            events[this.domain] = new EventEmitter();
-        
-        return events[this.domain];
-    }
-    
-    on(event, handler) {
-        this.getEventEmitter().on(event, handler);
-    }
-    
-    off(event) {
-        this.getEventEmitter().removeAllListeners(event);
-    }
-
-    /**
      * Checks whether currently doing a cold start
      */
     isColdStart() {
@@ -97,29 +81,55 @@ export default class CoffeeMaker extends ActiveRecord {
         return (new Date().getTime() - this.state.lastPowerOff.getTime()) / 1000 > this.calibration.coldStartThresholdSeconds;
     }
 
+    /**
+     * Start listening events on all coffee makers
+     */
     static async startListening() {
         /** @type {CoffeeMaker[]} */
-        const coffeeMakers = await this.findAll({});
-        coffeeMakers.forEach(async (coffeeMaker) => {
+        const coffeeMakers = await this.getAll();
+        
+        for (let coffeeMaker of coffeeMakers) {
             coffeeMaker.startListening();
-        });
+        }
     }
-
-    async notify(o) {
-        const n = Object.assign(new Notification, o);
-        await n.sendTo(await this.getSubscriptions());
-    }
-
-    async getSubscriptions() {
-        return await PushSubscription.findAll({where: {domain: this.domain}});
-    }
-
+    
+    /**
+     * Stop listening events on all coffee makers
+     */
     static async stopListening() {
         /** @type {CoffeeMaker[]} */
-        const coffeeMakers = await this.findAll({});
-        coffeeMakers.forEach(async (coffeeMaker) => {
+        const coffeeMakers = await this.getAll();
+
+        for (let coffeeMaker of coffeeMakers) {
             coffeeMaker.stopListening();
+        }
+    }
+
+    /**
+     * @param {string} [event]
+     * @returns {Promise<PushSubscription[]>}
+     */
+    async getSubscriptions(event) {
+        if (!event)
+            return await PushSubscription.getAll();
+
+        return await PushSubscription.getAllByDomainAndEvent(this.domain, event);
+    }
+
+    async emit(event, ...params) {
+        console.log("emitting " + event);
+
+        const recipients = await this.getSubscriptions(event);
+        if (!recipients.length)
+            return;
+
+        const notification = new Notification({
+            title: `${event} happened`,
+            icon: "/images/notification.jpg",
+            body: "OMG"
         });
+
+        await notification.sendTo(recipients);
     }
 
     /**
@@ -136,17 +146,17 @@ export default class CoffeeMaker extends ActiveRecord {
 
         if (this.state.previous) {
             if (this.state.previous.power > 0 && state.power < 1) {
-                this.getEventEmitter().emit('power-off');
+                this.emit('power-off');
                 this.state.lastPowerOff = new Date();
                 await this.save();
             } else if (this.state.previous.power == 0 && state.power > 0) {
-                this.getEventEmitter().emit('power-on');
+                this.emit('power-on');
             }
         }
 
         if (this.state.start === null) {
             if (state.power > 100) {
-                this.getEventEmitter().emit('start');
+                this.emit('start');
                 this.state.start = this.state.previous || state;
             }
         } else {
@@ -158,32 +168,54 @@ export default class CoffeeMaker extends ActiveRecord {
             state.cups = Math.round(kwh / this.calibration.kwhPerCup);
 
             if (state.power < 100) {
-                this.getEventEmitter().emit('finishing', state.cups);
+                this.emit('finishing', state.cups);
                 this.state.start = null;
             } else if (!this.state.previous || state.cups !== this.state.previous.cups) {
-                this.getEventEmitter().emit('progress', state.cups);
+                this.emit('progress', state.cups);
             }
         }
         this.state.previous = state;
     }
 
+    /**
+     * Checks whether the status polling timer is active for the domain
+     * @returns {boolean}
+     */
     isListening() {
         return !!timers[this.domain];
     }
 
+    /**
+     * Starts polling the device
+     * @param {number} interval 
+     * @returns {void}
+     */
     startListening(interval = 5000) {
-        this.stopListening();
+        if (this.isListening())
+            return;
         
-        timers[this.domain] = setInterval(async () => await this.updateStatus(), interval);
-        console.log(`Started polling "${this.cloud.alias}" at the interval of ${interval} ms`);
+        if (!this.cloud.token) {
+            console.log(`No TP-Link cloud token provided for "${this.domain}"`);
+            return;
+        }
+
+        console.log(`Started polling "${this.domain}" at the interval of ${interval} ms`);
+        this.updateStatus().then(() => {
+            timers[this.domain] = setInterval(async () => await this.updateStatus(), interval);
+        });
     }
 
+    /**
+     * Stops polling the device
+     * @returns {void}
+     */
     stopListening() {
-        if (this.isListening()) {
-            clearInterval(timers[this.domain]);
-            timers[this.domain] = null;
-            console.log(`Stopped polling ${this.cloud.alias}`);
-        }
+        if (!this.isListening())
+            return;
+        
+        clearInterval(timers[this.domain]);
+        timers[this.domain] = null;
+        console.log(`Stopped polling ${this.domain}`);
     }
     
 }

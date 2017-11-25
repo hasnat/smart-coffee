@@ -10,7 +10,6 @@
     "body-parser": "~1.0.0",
     "dotenv": "^4.0.0",
     "ejs": "^2.5.7",
-    "event-emitter-es6": "^1.1.5",
     "express": "~4.0.0",
     "node-fetch": "^1.7.3",
     "rethinkdbdash": "^2.3.31",

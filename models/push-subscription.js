@@ -1,14 +1,5 @@
-
 import ActiveRecord from './active-record';
 
-/**
- * const notification = new Notification({
-          title: "Successfully subscribed",
-          icon: "/images/notification.jpg",
-          body: "You'll stay updated about the coffee status"
-        });
-        await notification.sendTo([subscription]);
- */
 
 /**
  * A class to represent the client PushSubscription object
@@ -27,6 +18,26 @@ export default class PushSubscription extends ActiveRecord {
     static get table() { return "subscriptions"; }
 
     static get primaryKey() { return "id"; }
+
+    static async boot(tableList) {
+        // calling super.boot creates the table if not existing already
+        await super.boot(tableList);
+
+        const indexList = await (await this.query().indexList().run()).toArray();
+        
+        if (!indexList.includes("domain")) {
+            await this.query().indexCreate("domain").run();
+            await this.query().indexWait("domain").run();
+        }
+        
+        // create a compound index containing domain & event
+        if (!indexList.includes("domain-event")) {
+            await this.query().indexCreate("domain-event", (subscription) => {
+                return subscription("events").map((event) => [ subscription("domain"), event ]);
+            }, { multi: true }).run();
+            await this.query().indexWait("domain-event").run();
+        }
+    }
 
     /**
      * Identifier generated from the end of the endpoint URI
@@ -103,5 +114,15 @@ export default class PushSubscription extends ActiveRecord {
         // Save to the db
         await this.save();
     }
+    
+    static async getAllByDomainAndEvent(domain, event) {
+        const result = await this.query().getAll([domain, event], { index: "domain-event" }).run();
+        const all = [];
 
+        await result.eachAsync(sub => {
+            all.push(new this(sub, { isNew: false }));
+        });
+
+        return all;
+    }
 }

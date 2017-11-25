@@ -1,7 +1,11 @@
 import r from "../r";
 import CoffeeMaker from "./coffeemaker";
+import ActiveRecord from "./active-record";
 import PushSubscription from "./push-subscription"
 
+/**
+ * @type {typeof ActiveRecord[]}
+ */
 const models = [CoffeeMaker, PushSubscription];
 
 /**
@@ -9,21 +13,14 @@ const models = [CoffeeMaker, PushSubscription];
  */
 
 export default r.tableList().run()
-    .then((cursor) => cursor.toArray())
-    .then((tableList) => {
-        models.forEach(async (model) => {
-            const table = model.table;
-
-            if (tableList.indexOf(table) === -1) {
-                await r.tableCreate(table, { primaryKey: model.primaryKey }).run();
-                console.info(`Created table '${table}'`);
-            } else {
-                console.info(`Table '${table}' already created`);
-            }
-        });
-
-        /**
-         * All tables created, let's proceed with other stuff
-         */        
-        return CoffeeMaker.startListening();
+    .then(cursor => cursor.toArray())
+    .then(async tableList => {
+        for (let model of models) {
+            await model.boot(tableList);
+        }
+    })
+    .then(async () => {
+        for (let model of models) {
+            await model.afterBoot();
+        }
     });

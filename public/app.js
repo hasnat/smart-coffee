@@ -12,8 +12,9 @@ class App {
             return this.error("Valitettavasti selaimesi ei tue ilmoituksia tai Web Push -tekniikkaa!");
 
         navigator.serviceWorker.register(options.serviceWorker)
-            .then(x => navigator.serviceWorker.ready)
-            .then(async (registration) => {
+            .then(registration => navigator.serviceWorker.ready)
+            .then(registration => {
+                /** @type {ServiceWorkerRegistration} */
                 this.registration = registration;
 
                 /** @type {NotificationHandler} */
@@ -21,14 +22,14 @@ class App {
                     pushManager: registration.pushManager,
                     appServerKeyLocation: options.appServerKeyLocation
                 });
-
-                return this.main();
-            });
+            })
+            .then(() => this.main());
 
     }
 
     error(message) {
         alert(message);
+        
         return this;
     }
 
@@ -36,7 +37,7 @@ class App {
         return ('serviceWorker' in navigator);
     }
 
-    async propagateNotificationSubscription(element) {
+    async notificationSubscriptionChange(element) {
         if (!await NotificationHandler.allowed()) {
             this.error("Olet estänyt ilmoitukset!");
             return;
@@ -54,21 +55,17 @@ class App {
     }
 
     async main() {
-        
+        /** @type {HTMLInputElement[]} */
         const checkboxes = this.options.eventCheckboxes;
-        const app = this;
-    
-        // hook event listeners
-        for (let i = 0; i < checkboxes.length; i++) {
-            checkboxes[i].addEventListener('change', function() { app.propagateNotificationSubscription(this); });
-        }
-    
+        
         await this.notifications.sync();
-
-        // update current status
-        for (let i = 0; i < checkboxes.length; i++) {
-            const x = checkboxes[i];
+        
+        for (const x of checkboxes) {
+            // Set initial status
             x.checked = this.notifications.subscribed(x.value);
+
+            // Hook event listener
+            x.addEventListener('change', async () => this.notificationSubscriptionChange(x));
         }
 
     }

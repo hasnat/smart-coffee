@@ -5,7 +5,7 @@ export default class ActiveRecord {
     constructor(props, opts) {
         /** @type {Object<string, any>} */
         this.__data = Object.assign({}, props);
-
+        
         this.__meta = Object.assign({
             isNew: true
         }, opts || {});
@@ -35,6 +35,27 @@ export default class ActiveRecord {
     static get table() {
         return this.name.toLowerCase();
     }
+
+    /**
+     * Called on module load
+     * @param {string[]} tableList List of existing database tables
+     */
+    static async boot(tableList) {
+        const table = this.table;
+        
+        if (tableList.indexOf(table) === -1) {
+            await r.tableCreate(this.table, { primaryKey: this.primaryKey }).run();
+            console.info(`Created table '${table}'`);
+        } else {
+            console.info(`Table '${table}' already created`);
+        }
+    }
+
+    /**
+     * Called after all models have been booted
+     * @returns {Promise}
+     */
+    static async afterBoot() { }
 
     toJSON() {
         const o = {};
@@ -103,20 +124,16 @@ export default class ActiveRecord {
      * @returns {Promise<any[]>}
      */
     static async getAll() {
-        let all = [];
-        (await this.query().run()).each((row) => {
-            all.push(new this(row, { isNew: false }));
-        });
-
-        return all;
+        return await this.findAll({});
     }
     
     /**
      * @returns {Promise<any[]>}
      */
     static async findAll(predicate, opts) {
-        let all = [];
-        (await this.query(opts).filter(predicate).run()).each((row) => {
+        const all = [];
+        const result = await this.query(opts).filter(predicate).run();
+        await result.eachAsync((row) => {
             all.push(new this(row, { isNew: false }));
         });
 
@@ -127,25 +144,13 @@ export default class ActiveRecord {
      * @returns {Promise<any>}
      */
     static async find(predicate, opts) {
-        const cursor = await this.query(opts).filter(predicate).run();
-        let row;
-        try {
-            const row = await cursor.next();
-            cursor.close();
+        const cursor = await this.query(opts).filter(predicate).nth(0).run();
+        const rows = await cursor.toArray();
 
-            return new this(row, { isNew: false });
-
-        } catch (err) {
-            cursor.close();
-
-            /**
-             * Source: https://www.rethinkdb.com/api/javascript/next/    (:D)
-             */
-            if ((err.name !== "ReqlDriverError") || err.message !== "No more rows in the cursor.")
-                throw err;
-
+        if (rows.length !== 1)
             return undefined;
-        }
+            
+        return new this(rows[0], { isNew: false });
     }
 
     /**
