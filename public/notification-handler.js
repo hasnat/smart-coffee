@@ -76,14 +76,18 @@ export default class NotificationHandler {
         if (this.subscribed(event))
             return;
         
-        if (!this.appServerKey)
-            this.appServerKey = await (await jsonApi.get(this.appServerKeyLocation)).arrayBuffer();
+        if (!await this.pushManager.getSubscription()) {
 
-        // Get existing subscription or create new
-        await this.pushManager.getSubscription() || await this.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: this.appServerKey
-        });
+            if (!this.appServerKey)
+                this.appServerKey = await (await jsonApi.get(this.appServerKeyLocation)).arrayBuffer();
+
+            // Get existing subscription or create new
+            await this.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: this.appServerKey
+            });
+            
+        }
 
         if (!this.endpoint)
             await this.sync();
