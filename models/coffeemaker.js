@@ -10,6 +10,7 @@ const timers = {};
  * @typedef CoffeeMakerCalibration
  * @property {number} coldStartCompensationKwh
  * @property {number} coldStartThresholdSeconds
+ * @property {number} finishingSecondsPerCup
  * @property {number} kwhPerCup
  */
 
@@ -30,7 +31,8 @@ export default class CoffeeMaker extends ActiveRecord {
             props.calibration = Object.assign({
                 coldStartCompensationKwh: 0.004,
                 coldStartThresholdSeconds: 900,
-                kwhPerCup: 0.0136
+                kwhPerCup: 0.0136,
+                finishingSecondsPerCup: 9 // this is untested
             }, props.calibration || {});
         }
 
@@ -55,7 +57,6 @@ export default class CoffeeMaker extends ActiveRecord {
      */
     static async afterBoot() {
         await super.afterBoot();
-        console.log("calling start listening..");
         await this.startListening()
     }
     
@@ -116,20 +117,20 @@ export default class CoffeeMaker extends ActiveRecord {
         return await PushSubscription.getAllByDomainAndEvent(this.domain, event);
     }
 
-    async emit(event, ...params) {
-        console.log("emitting " + event);
+    emit(event, params) {
+        this.getSubscriptions(event)
+            .then(recipients => {
+                if (!recipients.length)
+                    return;
 
-        const recipients = await this.getSubscriptions(event);
-        if (!recipients.length)
-            return;
+                const notification = new Notification({
+                    title: `${event} happened`,
+                    icon: "/images/notification.jpg",
+                    body: "OMG"
+                });
 
-        const notification = new Notification({
-            title: `${event} happened`,
-            icon: "/images/notification.jpg",
-            body: "OMG"
-        });
-
-        await notification.sendTo(recipients);
+                return notification.sendTo(recipients);
+            });
     }
 
     /**
@@ -168,10 +169,13 @@ export default class CoffeeMaker extends ActiveRecord {
             state.cups = Math.round(kwh / this.calibration.kwhPerCup);
 
             if (state.power < 100) {
-                this.emit('finishing', state.cups);
+                this.emit('finishing', { cups: state.cups });
                 this.state.start = null;
+                setTimeout(() => {
+                    this.emit('finished', { cups: state.cups });
+                }, state.cups * this.calibration.finishingSecondsPerCup * 1000);
             } else if (!this.state.previous || state.cups !== this.state.previous.cups) {
-                this.emit('progress', state.cups);
+                this.emit('progress', { cups: state.cups });
             }
         }
         this.state.previous = state;
