@@ -18,16 +18,30 @@ router.use(express.static('./public'));
 router.use('/shared', express.static('./shared'));
 router.use('/api/', apiRoutes);
 
-
-/* GET home page. */
+/* The main index page. */
 router.get('/', async (req, res) => {
     /** @type {CoffeeMaker} */
     const coffeeMaker = res.locals.coffeeMaker;
 
+    if (coffeeMaker.isNew()) {
+        // 303 See Other
+        res.redirect(303, '/config');
+        return;
+    }
+
     res.render('index', {
         title: coffeeMaker.domain,
-        applicationServerKey: process.env.VAPID_PUBLIC_KEY,
-        showConfig: req.query.config || coffeeMaker.isNew(),
+        coffeeMaker: coffeeMaker
+    });
+});
+
+/* The config page. */
+router.get('/config', async (req, res) => {
+    /** @type {CoffeeMaker} */
+    const coffeeMaker = res.locals.coffeeMaker;
+
+    res.render('config', {
+        title: `Asetukset – ${coffeeMaker.domain}`,
         coffeeMaker: coffeeMaker
     });
 });

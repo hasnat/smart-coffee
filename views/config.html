@@ -1,13 +1,10 @@
-<aside>
+<%- include('./partials/header.html') %>
+<main>
     <form spellcheck="false" autocomplete="off" id="cloud-config">
         <h3>
-            Asetukset
+            Muokkaa asetuksia
+            <div><%= coffeeMaker.domain %></div>
         </h3>
-
-        <label>
-            <span>Verkkotunnus:</span>
-            <input type="text" id="cloud-config-domain" disabled value="<%= coffeeMaker.domain %>">
-        </label>
 
         <label>
             <span>TP-Link Cloud -sähköposti</span>
@@ -27,7 +24,7 @@
             <% if (coffeeMaker.cloud.alias) { %>
                 <option value=""><%- coffeeMaker.cloud.alias %></option>
             <% } else { %>
-                <option value="">Kirjaudu ensin sisään</option>
+                <option value="">-</option>
             <% } %>
             </select>
         </label>
@@ -35,5 +32,6 @@
         <button type="button" id="cloud-config-save">Tallenna asetukset</button>
 
     </form>
-</aside>
+</main>
 <script type="module" src="./config.js"></script>
+<%- include('partials/footer.html') %>

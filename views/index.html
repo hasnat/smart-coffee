@@ -1,6 +1,6 @@
 <%- include('partials/header.html') %>
 <main>
-    <form id="notifications" disabled>
+    <form id="notifications">
         <div>Ilmoita minulle heti, kun</div>
         <div id="subscribe-event-list">
             <label>
@@ -15,9 +15,4 @@
         </div>
     </form>
 </main>
-
-<% if (showConfig) { %>
-    <%- include('partials/config.html') %>
-<% } %>
-
 <%- include('partials/footer.html') %>
