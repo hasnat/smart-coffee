@@ -7,10 +7,13 @@ webpush.setVapidDetails(
     process.env.VAPID_PRIVATE_KEY
 );
 
-export default class Notification {
+class Notification {
 
     constructor(attributes) {
-        Object.assign(this, attributes);
+        Object.assign(this, {
+            icon: "/images/notification.jpg",
+            body: "t. Kahvinkeitin"
+        }, attributes);
     }
 
     /**
@@ -18,7 +21,7 @@ export default class Notification {
      * @param {PushSubscription[]} subscriptions 
      */
     async sendTo(subscriptions) {
-        if (!subscriptions)
+        if (!Array.isArray(subscriptions) || subscriptions.length === 0)
             return;
         
         let sendPromises = [];
@@ -30,4 +33,34 @@ export default class Notification {
         await Promise.all(sendPromises);
     }
 
+    static get(event) {
+        if (!(event in notifications))
+            throw new Error("Invalid event");
+
+        return notifications[event];
+    }
+
 }
+
+/**
+ * @type {Object<string, Notification>}
+ */
+const notifications = {
+    "power-on": new Notification({
+        title: "Kahvinkeitin on laitettu päälle!"
+    }),
+    "starting": new Notification({
+        title: "Kahvia on tulossa pian!"
+    }),
+    "finishing": new Notification({
+        title: "Kahvi on pian valmista!"
+    }),
+    "finished": new Notification({
+        title: "Kahvi on valmista!"
+    }),
+    "power-off": new Notification({
+        title: "Kahvinkeitin on sammutettu!"
+    }),
+};
+
+export default Notification;

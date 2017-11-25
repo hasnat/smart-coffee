@@ -115,6 +115,17 @@ export default class PushSubscription extends ActiveRecord {
         await this.save();
     }
     
+    static async getAllByDomain(domain) {
+        const result = await this.query().getAll(domain, { index: "domain" }).run();
+        const all = [];
+
+        await result.eachAsync(sub => {
+            all.push(new this(sub, { isNew: false }));
+        });
+
+        return all;
+    }
+    
     static async getAllByDomainAndEvent(domain, event) {
         const result = await this.query().getAll([domain, event], { index: "domain-event" }).run();
         const all = [];

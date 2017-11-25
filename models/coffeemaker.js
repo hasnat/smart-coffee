@@ -10,7 +10,10 @@ const timers = {};
  * @typedef CoffeeMakerCalibration
  * @property {number} coldStartCompensationKwh
  * @property {number} coldStartThresholdSeconds
+ * @property {number} powerOnThresholdWatts
+ * @property {number} finishingSeconds
  * @property {number} finishingSecondsPerCup
+ * @property {number} actionThresholdWatts
  * @property {number} kwhPerCup
  */
 
@@ -18,6 +21,7 @@ const timers = {};
  * @typedef CoffeeMakerState
  * @property {Date} lastPowerOff
  * @property {TpLinkEmeterState} previous
+ * @property {TpLinkEmeterState} current
  * @property {TpLinkEmeterState} start
  */
 export default class CoffeeMaker extends ActiveRecord {
@@ -27,18 +31,22 @@ export default class CoffeeMaker extends ActiveRecord {
         if (!(props.cloud instanceof TpLinkCloud))
             props.cloud = new TpLinkCloud(props.cloud || {});
         
-        if (!props.calibration) {
+        //if (!props.calibration) {
             props.calibration = Object.assign({
                 coldStartCompensationKwh: 0.004,
-                coldStartThresholdSeconds: 900,
+                coldStartThresholdSeconds: 1200,
                 kwhPerCup: 0.0136,
-                finishingSecondsPerCup: 9 // this is untested
+                powerOnThresholdWatts: 5,
+                actionThresholdWatts: 150,
+                finishingSeconds: 30,
+                finishingSecondsPerCup: 6 // this is untested
             }, props.calibration || {});
-        }
+        //}
 
         if (!props.state) {
             props.state = {
                 previous: {},
+                current: {},
                 start: {},
                 lastPowerOff: null
             };
@@ -112,73 +120,152 @@ export default class CoffeeMaker extends ActiveRecord {
      */
     async getSubscriptions(event) {
         if (!event)
-            return await PushSubscription.getAll();
+            return await PushSubscription.getAllByDomain(this.domain);
 
         return await PushSubscription.getAllByDomainAndEvent(this.domain, event);
     }
 
+    /**
+     * 
+     * @param {string} event
+     * @param {Object} params
+     */
     emit(event, params) {
+        console.log(event);
         this.getSubscriptions(event)
             .then(recipients => {
-                if (!recipients.length)
-                    return;
-
-                const notification = new Notification({
-                    title: `${event} happened`,
-                    icon: "/images/notification.jpg",
-                    body: "OMG"
-                });
-
-                return notification.sendTo(recipients);
+                return Notification.get(event)
+                                   .sendTo(recipients);
+            }).catch((e) => {
+                console.error(e);
             });
+    }
+    
+    /**
+     * @returns {boolean}
+     */
+    hasJustBeenPoweredOn() {
+        if (!this.state.previous)
+            return false;
+        
+        return this.state.previous.power < this.calibration.powerOnThresholdWatts
+            && this.state.current.power > this.calibration.powerOnThresholdWatts;
+    }
+    
+    /**
+     * @returns {boolean}
+     */ 
+    hasJustBeenPoweredOff() {
+        if (!this.state.previous)
+            return false;
+        
+        return this.state.previous.power > this.calibration.powerOnThresholdWatts
+            && this.state.current.power < this.calibration.powerOnThresholdWatts;
+    }
+    
+    /**
+     * @returns {boolean}
+     */
+    hasJustStartedHeatingTheWater() {
+        if (this.state.start !== null)
+            return false;
+        
+        return this.isHeatingTheWater();
+    }
+    
+    /**
+     * @returns {boolean}
+     */ 
+    hasJustFinishedHeatingTheWater() {
+        if (this.state.start === null)
+            return false;
+
+        return !this.isHeatingTheWater();
+    }
+    
+    /**
+     * @returns {boolean}
+     */
+    isHeatingTheWater() {
+        return (this.state.current.power > this.calibration.actionThresholdWatts);
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    hasJustMadeProgress() {
+        return this.state.previous && this.state.current.cups !== this.state.previous.cups;
     }
 
     /**
      * @private
+     * @returns {void}
+     */
+    updatePowerStatus() {
+        if (this.hasJustBeenPoweredOff()) {
+            this.emit('power-off');
+            this.state.lastPowerOff = new Date();
+        } else if (this.hasJustBeenPoweredOn()) {
+            this.emit('power-on');
+        }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    updateWaterHeatingStatus() {
+        const { calibration, state } = this;
+        
+        if (this.hasJustStartedHeatingTheWater()) {
+            this.emit('starting');
+            state.start = state.previous || state.current;
+            return;
+        } else if (state.start === null) {
+            return;
+        }
+
+        let kwh = state.current.total - state.start.total;
+        
+        if (this.isColdStart())
+            kwh -= calibration.coldStartCompensationKwh;
+
+        state.current.cups = Math.round(kwh / calibration.kwhPerCup);
+
+        if (this.hasJustFinishedHeatingTheWater()) {
+            this.emit('finishing', { cups: state.current.cups });
+            state.start = null;
+            setTimeout(() => {
+                this.emit('finished', { cups: state.current.cups });
+            }, (calibration.finishingSeconds + state.current.cups * calibration.finishingSecondsPerCup) * 1000);
+        } else if (this.hasJustMadeProgress()) {
+            setTimeout(() => {
+                this.emit('progress', { cups: state.current.cups });
+            }, (calibration.finishingSeconds + state.current.cups * calibration.finishingSecondsPerCup) * 1000);
+        }
+    }
+
+    /**
+     * Updates the machine status from the cloud
+     * @private
+     * @returns {Promise<void>}
      */
     async updateStatus () {
         let state;
         try {
-            state = await this.cloud.getEmeterStatus();
+            this.state.current = await this.cloud.getEmeterStatus();
         } catch (err) {
             console.error(err);
             return;
         }
 
-        if (this.state.previous) {
-            if (this.state.previous.power > 0 && state.power < 1) {
-                this.emit('power-off');
-                this.state.lastPowerOff = new Date();
-                await this.save();
-            } else if (this.state.previous.power == 0 && state.power > 0) {
-                this.emit('power-on');
-            }
-        }
+        this.updatePowerStatus();
+        this.updateWaterHeatingStatus();
+        
+        // always save the state
+        await this.save();
 
-        if (this.state.start === null) {
-            if (state.power > 100) {
-                this.emit('start');
-                this.state.start = this.state.previous || state;
-            }
-        } else {
-            let kwh = state.total - this.state.start.total;
-            
-            if (this.isColdStart())
-                kwh -= this.calibration.coldStartCompensationKwh;
-
-            state.cups = Math.round(kwh / this.calibration.kwhPerCup);
-
-            if (state.power < 100) {
-                this.emit('finishing', { cups: state.cups });
-                this.state.start = null;
-                setTimeout(() => {
-                    this.emit('finished', { cups: state.cups });
-                }, state.cups * this.calibration.finishingSecondsPerCup * 1000);
-            } else if (!this.state.previous || state.cups !== this.state.previous.cups) {
-                this.emit('progress', { cups: state.cups });
-            }
-        }
-        this.state.previous = state;
+        this.state.previous = this.state.current;
     }
 
     /**
