@@ -47,7 +47,7 @@ body > main {
 
 form {
     display: block;
-    padding: 20px;
+    padding: 40px 40px;
     color: #aa9990;
     font-size: 14px;
     margin: 10px;
@@ -68,26 +68,18 @@ main form .button {
     width: auto;
 }
 
-aside {
-    display: flex;
-    align-self: stretch;
-}
-
-aside form {
-    margin: 0;
-    padding: 30px 40px;
-    box-sizing: content-box;
-    background: rgba(55, 45, 38, .85);
-    max-width: 260px;
-    box-shadow: rgba(0, 0, 0, .25) 0 0 20px;
-}
-
 form h3 {
     margin: 0;
     display: block;
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: 18px;
+}
+
+form h3 > * {
+    font-size: 12px;
+    display: block;
+    font-weight: 400;
 }
 
 form * {

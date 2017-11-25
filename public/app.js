@@ -11,14 +11,19 @@ class App {
         if (!NotificationHandler.supported())
             return this.error("Valitettavasti selaimesi ei tue ilmoituksia tai Web Push -tekniikkaa!");
 
-        navigator.serviceWorker.register(options.serviceWorker).then(async (registration) => {
-            await navigator.serviceWorker.ready;
-            this.registration = registration;
+        navigator.serviceWorker.register(options.serviceWorker)
+            .then(x => navigator.serviceWorker.ready)
+            .then(async (registration) => {
+                this.registration = registration;
 
-            /** @type {NotificationHandler} */
-            this.notifications = new NotificationHandler(registration.pushManager);
-            return this.main();
-        });
+                /** @type {NotificationHandler} */
+                this.notifications = new NotificationHandler({
+                    pushManager: registration.pushManager,
+                    appServerKeyLocation: options.appServerKeyLocation
+                });
+
+                return this.main();
+            });
 
     }
 
@@ -71,5 +76,6 @@ class App {
 
 export default new App({
     serviceWorker: "./service-worker.js",
-    eventCheckboxes: document.querySelectorAll('#notifications input')
+    eventCheckboxes: document.querySelectorAll('#notifications input'),
+    appServerKeyLocation: "./api/vapid.pub"
 });

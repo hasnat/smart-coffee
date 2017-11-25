@@ -1,7 +1,7 @@
 import jsonApi from "../shared/json-api.js";
 
 export default class NotificationHandler {
-    constructor(pushManager) {
+    constructor({pushManager, appServerKeyLocation}) {
         /** @type {PushManager} */
         this.pushManager = pushManager;
         
@@ -10,6 +10,12 @@ export default class NotificationHandler {
 
         /** @type {string[]} */
         this.events = [];
+
+        /** @type {string} */
+        this.appServerKeyLocation = appServerKeyLocation;
+
+        /** @type {ArrayBuffer} */
+        this.appServerKey = null;
     }
 
     /**
@@ -70,10 +76,13 @@ export default class NotificationHandler {
         if (this.subscribed(event))
             return;
         
+        if (!this.appServerKey)
+            this.appServerKey = await (await jsonApi.get(this.appServerKeyLocation)).arrayBuffer();
+
         // Get existing subscription or create new
         await this.pushManager.getSubscription() || await this.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: window['applicationServerKey']
+            applicationServerKey: this.appServerKey
         });
 
         if (!this.endpoint)
