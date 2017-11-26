@@ -1,3 +1,9 @@
+import express from 'express';
+import routes from './routes';
+import ejs from 'ejs';
+import r from './r';
+import models from './models';
+import Server from './server'
 
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
@@ -5,11 +11,6 @@ process.on('unhandledRejection', (reason, p) => {
     // application specific logging, throwing an error, or other logic here
 });
 
-import express from 'express';
-import routes from './routes';
-import ejs from 'ejs';
-import r from './r';
-import models from './models';
 
 const app = express();
 
@@ -53,14 +54,15 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.set('port', process.env.PORT || 3000);
+app.set('ports', {
+    http: process.env.PORT,
+    https: process.env.PORT_SSL
+});
+
+const server = new Server(app);
 
 models.then(() => {
-    
-    var server = app.listen(app.get('port'), function() {
-        console.debug('Express server listening on port ' + server.address().port);
-    });
-
+    server.listen();
 });
 
 export default app;
