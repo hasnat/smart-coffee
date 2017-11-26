@@ -44,7 +44,7 @@ export default class Server {
             });
         
         https.createServer(le.httpsOptions, le.middleware(this.app))
-            .listen(this.ports.http, () => {
+            .listen(this.ports.https, () => {
                 console.log(`HTTPS server listening on port ${this.ports.http}`);
             });
     }
