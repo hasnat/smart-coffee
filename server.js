@@ -38,7 +38,7 @@ export default class Server {
             approveDomains: this.approveDomains
         });
     
-        http.createServer(le.middleware(redirectHttps({ port: this.ports.https })))
+        http.createServer(le.middleware(redirectHttps()))
             .listen(this.ports.http, "localhost", () => {
                 console.log(`HTTP server listening on port ${this.ports.http}`);
             });
