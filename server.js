@@ -63,8 +63,7 @@ export default class Server {
         const verifyTasks = opts.domains.map(domain => verifyDns(domain));
 
         Promise.all(verifyTasks).then((results) => {
-            console.log("alrite!");
-            console.log(results);
+            console.log(`About to request some certificates for ${opts.domains}`);
             cb(null, { options: opts, certs: certs });
         }).catch(err => {
             console.error(err);

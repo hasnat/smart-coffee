@@ -6,7 +6,7 @@ const ownIps = [];
 for (const ifname of Object.keys(ifaces)) {
     for (const ip of ifaces[ifname]) {
         // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-        if (ip.family === 'IPv4' || ip.internal !== false)
+        if (ip.family !== 'IPv4' || ip.internal !== false)
             continue;
 
         ownIps.push(ip.address);
