@@ -39,12 +39,12 @@ export default class Server {
         });
     
         http.createServer(le.middleware(redirectHttps({ port: this.ports.https })))
-            .listen(this.ports.http, () => {
+            .listen(this.ports.http, "localhost", () => {
                 console.log(`HTTP server listening on port ${this.ports.http}`);
             });
         
         https.createServer(le.httpsOptions, le.middleware(this.app))
-            .listen(this.ports.https, () => {
+            .listen(this.ports.https, "localhost", () => {
                 console.log(`HTTPS server listening on port ${this.ports.https}`);
             });
     }
