@@ -1,11 +1,11 @@
 import express from "express";
-import PushSubscription from '../models/push-subscription';
-import CoffeeMaker from '../models/coffeemaker';
+import PushSubscription from '../../models/push-subscription';
+import CoffeeMaker from '../../models/coffeemaker';
 import bodyParser from 'body-parser';
 import base64url from 'urlsafe-base64';
 
-import coffeeMakerRoutes from './api/coffeemakers';
-import pushSubscriptionRoutes from './api/push-subscriptions';
+import coffeeMakerRoutes from './coffeemakers';
+import pushSubscriptionRoutes from './push-subscriptions';
 
 const router = express.Router();
 
