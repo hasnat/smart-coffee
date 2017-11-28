@@ -12,9 +12,9 @@ const timers = {};
  * @property {number} coldStartThresholdSeconds
  * @property {number} powerOnThresholdWatts
  * @property {number} finishingSeconds
- * @property {number} finishingSecondsPerCup
+ * @property {number} finishingSecondsPerBatch
  * @property {number} actionThresholdWatts
- * @property {number} kwhPerCup
+ * @property {number} kwhPerBatch
  */
 
 /**
@@ -35,11 +35,11 @@ export default class CoffeeMaker extends ActiveRecord {
             props.calibration = Object.assign({
                 coldStartCompensationKwh: 0.004,
                 coldStartThresholdSeconds: 1200,
-                kwhPerCup: 0.0136,
+                kwhPerBatch: 0.1360,
                 powerOnThresholdWatts: 5,
                 actionThresholdWatts: 150,
                 finishingSeconds: 30,
-                finishingSecondsPerCup: 6 // this is untested
+                finishingSecondsPerBatch: 60 // this is untested
             }, props.calibration || {});
         //}
 
@@ -194,7 +194,7 @@ export default class CoffeeMaker extends ActiveRecord {
      * @returns {boolean}
      */
     hasJustMadeProgress() {
-        return this.state.previous && this.state.current.cups !== this.state.previous.cups;
+        return this.state.previous && this.state.current.progress !== this.state.previous.progress;
     }
 
     /**
@@ -203,10 +203,10 @@ export default class CoffeeMaker extends ActiveRecord {
      */
     updatePowerStatus() {
         if (this.hasJustBeenPoweredOff()) {
-            this.emit('power-off');
+            this.emit('power-off', this.state.current);
             this.state.lastPowerOff = new Date();
         } else if (this.hasJustBeenPoweredOn()) {
-            this.emit('power-on');
+            this.emit('power-on', this.state.current);
         }
     }
 
@@ -218,8 +218,9 @@ export default class CoffeeMaker extends ActiveRecord {
         const { calibration, state } = this;
         
         if (this.hasJustStartedHeatingTheWater()) {
-            this.emit('starting');
-            state.start = state.previous || state.current;
+            const startState = state.previous || state.current;
+            this.emit('starting', startState);
+            state.start = startState;
             return;
         } else if (state.start === null) {
             return;
@@ -230,18 +231,18 @@ export default class CoffeeMaker extends ActiveRecord {
         if (this.isColdStart())
             kwh -= calibration.coldStartCompensationKwh;
 
-        state.current.cups = Math.round(kwh / calibration.kwhPerCup);
+        state.current.progress = (kwh / calibration.kwhPerBatch) || 0;
 
         if (this.hasJustFinishedHeatingTheWater()) {
-            this.emit('finishing', { cups: state.current.cups });
+            this.emit('finishing', state.current);
             state.start = null;
             setTimeout(() => {
-                this.emit('finished', { cups: state.current.cups });
-            }, (calibration.finishingSeconds + state.current.cups * calibration.finishingSecondsPerCup) * 1000);
+                this.emit('finished', state.current);
+            }, (calibration.finishingSeconds + state.current.progress * calibration.finishingSecondsPerBatch) * 1000);
         } else if (this.hasJustMadeProgress()) {
             setTimeout(() => {
-                this.emit('progress', { cups: state.current.cups });
-            }, (calibration.finishingSeconds + state.current.cups * calibration.finishingSecondsPerCup) * 1000);
+                this.emit('progress', state.current);
+            }, (calibration.finishingSeconds + state.current.progress * calibration.finishingSecondsPerBatch) * 1000);
         }
     }
 
