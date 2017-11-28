@@ -3,7 +3,6 @@ import routes from './routes';
 import ejs from 'ejs';
 import r from './r';
 import models from './models';
-import Server from './server'
 
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
@@ -54,15 +53,12 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.set('ports', {
-    http: process.env.PORT,
-    https: process.env.PORT_SSL
-});
-
-const server = new Server(app);
+app.set('port', process.env.PORT || 3000);
 
 models.then(() => {
-    server.listen();
+    app.listen(this.ports.http, 'localhost', () => {
+        console.log(`HTTP server listening on localhost:${this.get('port')}`);
+    });
 });
 
 export default app;
