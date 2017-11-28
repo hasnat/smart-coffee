@@ -50,10 +50,24 @@ router.put('/', async (req, res, next) => {
         return next();
     }
 
-    if (!oldCoffeeMaker.isNew())
+    if (!oldCoffeeMaker.isNew()) {
+        oldCoffeeMaker.stopListening();
         await oldCoffeeMaker.destroy();
+    }
     
     await newCoffeeMaker.save();
+
+    try {
+        /**
+         * Try to get emeter status
+         * Succeeded reply is an indication of active device
+         * and therefore we can start polling
+         */
+        await newCoffeeMaker.cloud.getEmeterStatus();
+        newCoffeeMaker.startListening();
+    } catch (err) {
+        newCoffeeMaker.stopListening();
+    }
 
     res.status(204);
     res.end();
