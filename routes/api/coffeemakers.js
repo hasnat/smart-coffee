@@ -41,13 +41,15 @@ router.put('/', async (req, res, next) => {
     if (!newCoffeeMaker.cloud || !newCoffeeMaker.cloud.email || !newCoffeeMaker.cloud.token) {
         // 403 Forbidden
         res.status(403);
-        return next();
+        res.end();
+        return;
     }
     
     if (oldCoffeeMaker.domain !== newCoffeeMaker.domain) {
         // 409 Concflict, as replacing the object would change the primary key (not allowed)
         res.status(409);
-        return next();
+        res.end();
+        return;
     }
 
     if (!oldCoffeeMaker.isNew()) {

@@ -51,7 +51,10 @@ document.querySelector("#cloud-config-save").addEventListener('click', async (e)
     if (txtEmail.value && !tp.email)
         tp.email = txtEmail.value;
 
-    await jsonApi.put('/api/coffeemakers/', {
+    const response = await jsonApi.put('/api/coffeemakers/', {
         cloud: tp
     });
+
+    if (response.status === 403)
+        alert("Kirjautumistiedot vaaditaan tallentamista varten.");
 });
