@@ -56,7 +56,7 @@ app.use((err, req, res, next) => {
 app.set('port', process.env.PORT || 3000);
 
 models.then(() => {
-    app.listen(app.get('port'), '::', () => {
+    app.listen(app.get('port'), () => {
         console.log(`HTTP server listening on port ${app.get('port')}`);
     });
 });
