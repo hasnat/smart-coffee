@@ -3,22 +3,21 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node --nolazy --experimental-modules --loader ./esm-loader.mjs -r dotenv/config ./app.js",
+    "start": "node --nolazy --experimental-modules --loader ./esm-loader.mjs ./app.js",
     "debug": "node --nolazy --experimental-modules --loader ./esm-loader.mjs -r dotenv/config --inspect-brk=9229 ./app.js"
   },
   "dependencies": {
     "body-parser": "~1.0.0",
-    "dotenv": "^4.0.0",
     "ejs": "^2.5.7",
     "express": "~4.0.0",
     "node-fetch": "^1.7.3",
-    "redirect-https": "^1.1.4",
     "rethinkdbdash": "^2.3.31",
     "urlsafe-base64": "^1.0.0",
     "web-push": "^3.2.4"
   },
   "devDependencies": {
     "@types/node": "^8.0.53",
-    "@types/rethinkdbdash": "github:types/rethinkdbdash"
+    "@types/rethinkdbdash": "github:types/rethinkdbdash",
+    "dotenv": "^4.0.0"
   }
 }
