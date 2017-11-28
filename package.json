@@ -19,5 +19,9 @@
     "@types/node": "^8.0.53",
     "@types/rethinkdbdash": "github:types/rethinkdbdash",
     "dotenv": "^4.0.0"
-  }
+  },
+  "engines": {
+    "node": "9.x"
+  },
+  "license": "MIT"
 }
