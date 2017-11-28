@@ -57,7 +57,7 @@ app.set('port', process.env.PORT || 3000);
 
 models.then(() => {
     app.listen(app.get('port'), '::', () => {
-        console.log(`HTTP server listening on localhost:${app.get('port')}`);
+        console.log(`HTTP server listening on port ${app.get('port')}`);
     });
 });
 
