@@ -12,7 +12,7 @@ html, body {
 
 html {
     font-size: 16px;
-    background-image: url(images/bg2.jpg);
+    background-image: url(images/bg.jpg);
     background-size: cover;
     background-position: center center;
     background-color: #221815;
@@ -30,7 +30,7 @@ html:before {
     bottom: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, .8);
+    background: rgba(0, 0, 0, .85);
     z-index: -1;
 }
 
@@ -77,9 +77,9 @@ form h3 {
 }
 
 form h3 > * {
-    font-size: 12px;
+    font-size: 13px;
     display: block;
-    font-weight: 400;
+    font-weight: 600;
 }
 
 form * {
@@ -128,7 +128,7 @@ label {
 label > span {
     display: block;
     padding-bottom: 6px;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 input[type=text], input[type=password], input[type=email], select {
@@ -183,7 +183,7 @@ input:focus {
     color: transparent;
     transition-timing-function: ease-out;
     transition-duration: .2s;
-    transition-property: transform, background-color;
+    transition-property: transform, background-color, border-color;
     box-shadow: rgba(0, 0, 0, .1) 0 1px 7px;
 }
 
@@ -199,7 +199,7 @@ input:focus {
     z-index: -1;
     transition-timing-function: ease-out;
     transition-duration: .2s;
-    transition-property: filter, transform, opacity;
+    transition-property: filter, transform, opacity, text-shadow;
     opacity: 0;
 }
 
@@ -221,8 +221,9 @@ input:focus {
 }
 
 #subscribe-event-list > label > input:checked + span:hover:before {
-    color: #a2ff00;
-    text-shadow: rgba(0, 0, 0, .25) 0 1px 2px;
+    background-color: #9dd632;
+    border-color: #9dd632;
+    text-shadow: rgba(0, 0, 0, .35) 0 1px 2px;
 }
 
 #subscribe-event-list > label > input + span:hover {

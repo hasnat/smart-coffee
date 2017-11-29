@@ -21,4 +21,5 @@ npm run-script start
 ```
 
 # Credits
-Icons made by [Freepik](http://www.freepik.com "Freepik") from [www.flaticon.com](https://www.flaticon.com "Flaticon") are licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
+Coffee cup icon made by [Freepik](http://www.freepik.com "Freepik") from [www.flaticon.com](https://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0").
+Background image by [jill111](https://pixabay.com/fi/users/jill111-334088/ "jill111 on pixabay.com") is licensed by [CC0 Creative Commons](https://creativecommons.org/share-your-work/public-domain/cc0/).
