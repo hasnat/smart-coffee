@@ -229,3 +229,20 @@ input:focus {
 #subscribe-event-list > label > input + span:hover {
     color: #e5c19d;
 }
+
+#power-button {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    fill: #aaa;
+    opacity: .2;
+    display: block;
+    width: 64px;
+    height: 64px;
+}
+
+html.power-on #power-button {
+    opacity: .95;
+    fill: rgb(255, 120, 0);
+    filter: drop-shadow(#ff5020 0 0 15px);
+}

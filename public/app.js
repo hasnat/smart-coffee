@@ -1,6 +1,7 @@
 "use strict";
 
 import NotificationHandler from "./notification-handler.js";
+import jsonApi from "../shared/json-api.js";
 
 class App {
     constructor(options) {
@@ -68,6 +69,29 @@ class App {
             x.addEventListener('change', async () => this.notificationSubscriptionChange(x));
         }
 
+        // update the current power status
+        this.updateStatus().then(() => {
+            setInterval(async () => {
+                await this.updateStatus();
+            }, 30000);
+        });
+
+    }
+
+    async updateStatus() {
+        try {
+            const response = await jsonApi.get('/api/coffeemakers');
+            const json = await response.json();
+            const html = document.documentElement;
+
+            if (json.power) {
+                html.classList.add('power-on');
+            } else {
+                html.classList.remove('power-on');
+            }
+        } catch (err) {
+            console.error(err);
+        }
     }
 }
 
