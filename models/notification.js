@@ -11,7 +11,8 @@ class Notification {
 
     constructor(attributes) {
         Object.assign(this, {
-            icon: "/images/notification.jpg",
+            icon: "/images/hot-coffee-cup-192.png",
+            badge: "/images/hot-coffee-cup-192.png",
             body: "t. Kahvinkeitin"
         }, attributes);
     }
@@ -60,6 +61,9 @@ const notifications = {
     }),
     "power-off": new Notification({
         title: "Kahvinkeitin on sammutettu!"
+    }),
+    "progress": new Notification({
+        title: "Kahvinkeittäminen edistyy"
     }),
 };
 
