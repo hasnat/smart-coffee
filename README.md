@@ -1,10 +1,14 @@
-## Installation
+## Installation (for development)
 
 ```
 git clone git@github.com:cappe/coffee.git
 cd coffee
 npm install
 ```
+
+You will also need a [RethinkDB server](https://rethinkdb.com/docs/install/ "How to install RethinkDB server").
+
+Finally copy .env.example to .env and set the config values. VAPID key creation has not yet been automated in this app, however, it is possible to do using the webpush module.
 
 ## Debug
 ```
