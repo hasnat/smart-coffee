@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
     }
 
     res.render('index', {
-        title: coffeeMaker.domain,
+        title: `Kahvi-ilmoitin – ${coffeeMaker.domain}`,
         coffeeMaker: coffeeMaker
     });
 });
@@ -41,7 +41,7 @@ router.get('/config', async (req, res) => {
     const coffeeMaker = res.locals.coffeeMaker;
 
     res.render('config', {
-        title: `Asetukset – ${coffeeMaker.domain}`,
+        title: `Asetukset – Kahvi-ilmoitin – ${coffeeMaker.domain}`,
         coffeeMaker: coffeeMaker
     });
 });
