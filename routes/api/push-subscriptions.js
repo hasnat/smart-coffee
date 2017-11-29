@@ -113,7 +113,7 @@ router.route('/:id/events/:event')
 
         // Toggle the requested event on
         await sub.subscribe(req.params.event);
-        
+                
         return next();
     })
     
