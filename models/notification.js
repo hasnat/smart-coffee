@@ -26,18 +26,24 @@ class Notification {
             return;
         
         let sendPromises = [];
+
+        const errorHandler = async (err, subscription) => {
+            // Delete subscription from the db if the end point is already 410 Gone
+            if (err.statusCode === 410) {
+                // Try to destroy – it doesn't really matter if it fails
+                try {
+                    await subscription.destroy();
+                } catch (e) {}
+            } else {
+                console.error(err);
+            }
+        };
         
         for (let i = 0; i < subscriptions.length; i++) {
             sendPromises.push(
-                webpush.sendNotification(subscriptions[i], JSON.stringify(this))
-                    .catch(err => {
-                        // Delete subscription from the db if the end point is already 410 Gone
-                        if (err.statusCode === 410) {
-                            subscriptions[i].destroy();
-                        } else {
-                            console.error(err);
-                        }
-                    })
+                webpush
+                    .sendNotification(subscriptions[i], JSON.stringify(this))
+                    .catch(async err => errorHandler(err, subscriptions[i]))
             );
         }
 
