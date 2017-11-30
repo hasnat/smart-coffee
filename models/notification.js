@@ -28,7 +28,17 @@ class Notification {
         let sendPromises = [];
         
         for (let i = 0; i < subscriptions.length; i++) {
-            sendPromises.push(webpush.sendNotification(subscriptions[i], JSON.stringify(this)));
+            sendPromises.push(
+                webpush.sendNotification(subscriptions[i], JSON.stringify(this))
+                    .catch(err => {
+                        // Delete subscription from the db if the end point is already 410 Gone
+                        if (err.statusCode === 410) {
+                            subscriptions[i].destroy();
+                        } else {
+                            console.error(err);
+                        }
+                    })
+            );
         }
 
         await Promise.all(sendPromises);
