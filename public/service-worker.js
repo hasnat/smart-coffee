@@ -1,25 +1,23 @@
-const closeNotifications = async function () {
-    for (const notification of await self.registration.getNotifications()) {
-        notification.close();
-    }
-};
+self.addEventListener("push", event => {
+    event.waitUntil((async () => {
+        const data = event.data.json();
 
-let closeTimeout;
+        // set the tag if none provided – this makes sure the browser will group (or replace) the notifications, if there's multiple
+        if (!data.tag)
+            data.tag = 'default';
+        
+        // show the notification
+        await self.registration.showNotification(data.title, data);
 
-self.addEventListener("push", async (e) => {
-    var data = e.data.json();
+        const notifications = await self.registration.getNotifications();
+        setTimeout(() => {
+            for (const n of notifications) {
+                n.close();
+            }
+        }, 10000);
+    })());
+});
 
-    // close any existing notifications
-    await closeNotifications();
-
-    // reset the close timeout
-    !closeTimeout || clearTimeout(closeTimeout);
-
-    // show the notification
-    await self.registration.showNotification(data.title, data);
-
-    // set the close timeout
-    closeTimeout = setTimeout(async () => {
-        await closeNotifications();
-    }, 5000);
+self.addEventListener("notificationclick", e => {
+    e.notification.close();
 });
