@@ -1,7 +1,7 @@
 ## Installation (for development)
 
 ```
-git clone git@github.com:cappe/coffee.git
+git clone git@github.com:valtzu/smart-coffee.git
 cd coffee
 npm install
 ```
