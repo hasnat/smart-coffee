@@ -1,6 +1,8 @@
 import http from "../http.js";
 const { fetch, Response, Headers } = http;
 
+const queue = Promise.resolve();
+
 export default class JsonApi {
     /**
      * 
@@ -10,7 +12,8 @@ export default class JsonApi {
      * @param {object} [options]
      * @returns {Promise<Response>}
      */
-    static async request(method, url, body, options) {
+    static request(method, url, body, options) {
+
         const opts = {
             method: method,
             headers: {},
@@ -28,7 +31,7 @@ export default class JsonApi {
         if (!(opts.headers instanceof Headers))
             opts.headers = new Headers(opts.headers);
         
-        return await fetch(url, opts);
+        return queue.then(() => fetch(url, opts));
     }
     
     /**
