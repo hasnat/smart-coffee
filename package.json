@@ -13,10 +13,10 @@
     "node-fetch": "^1.7.3",
     "rethinkdbdash": "^2.3.31",
     "urlsafe-base64": "^1.0.0",
-    "web-push": "^3.2.4"
+    "web-push": "^3.2.5"
   },
   "devDependencies": {
-    "@types/node": "^8.0.53",
+    "@types/node": "^8.0.57",
     "@types/rethinkdbdash": "github:types/rethinkdbdash",
     "dotenv": "^4.0.0"
   },
