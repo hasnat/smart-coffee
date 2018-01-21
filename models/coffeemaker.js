@@ -131,7 +131,7 @@ export default class CoffeeMaker extends ActiveRecord {
      * @param {Object} params
      */
     emit(event, params) {
-        console.log(event);
+        console.log(`${this.domain}: ${event}`);
         this.getSubscriptions(event)
             .then(recipients => {
                 return Notification.get(event)
@@ -256,7 +256,7 @@ export default class CoffeeMaker extends ActiveRecord {
         try {
             this.state.current = await this.cloud.getEmeterStatus();
         } catch (err) {
-            console.error(err);
+            console.error(`${this.domain}: ${err}`);
             return;
         }
 
