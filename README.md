@@ -2,7 +2,7 @@
 
 ```
 git clone git@github.com:valtzu/smart-coffee.git
-cd coffee
+cd smart-coffee
 npm install
 ```
 
