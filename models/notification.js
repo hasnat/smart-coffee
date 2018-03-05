@@ -1,5 +1,6 @@
 import webpush from 'web-push';
 import PushSubscription from './push-subscription';
+import jsonApi from '../shared/json-api';
 
 webpush.setVapidDetails(
     process.env.APP_URL || 'https://kofeiini.fi',
@@ -15,6 +16,17 @@ class Notification {
             badge: "/images/hot-coffee-cup-192.png",
             body: "t. Kahvinkeitin"
         }, attributes);
+    }
+
+    /**
+     * Send an incoming webhook to Slack
+     * @param {string} webhookUrl 
+     */
+    async sendToSlack(webhookUrl) {
+        return await jsonApi.post(webhookUrl, {
+            text: this.title,
+            icon_url: this.icon
+        });
     }
 
     /**

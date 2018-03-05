@@ -8,6 +8,8 @@ let select = document.querySelector('#cloud-config-device');
 let txtEmail = document.querySelector('#cloud-config-email');
 /** @type {HTMLInputElement} */
 let txtPassword = document.querySelector('#cloud-config-password');
+/** @type {HTMLInputElement} */
+let txtSlackUrl = document.querySelector('#cloud-config-slack-url');
 
 document.querySelector("#cloud-config-list-devices").addEventListener('click', async (e) => {
     e.preventDefault();
@@ -52,7 +54,8 @@ document.querySelector("#cloud-config-save").addEventListener('click', async (e)
         tp.email = txtEmail.value;
 
     const response = await jsonApi.put('/api/coffeemakers/', {
-        cloud: tp
+        cloud: tp,
+        slackUrl: txtSlackUrl.value
     });
 
     if (response.status === 403)

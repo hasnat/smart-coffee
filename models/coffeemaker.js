@@ -71,6 +71,9 @@ export default class CoffeeMaker extends ActiveRecord {
     /** @type {string} */
     get domain() { return this.__data.domain; }
     
+    /** @type {string} */
+    get slackUrl() { return this.__data.slackUrl; }
+    
     /** @type {TpLinkCloud} */
     get cloud() { return this.__data.cloud; }
     
@@ -132,10 +135,14 @@ export default class CoffeeMaker extends ActiveRecord {
      */
     emit(event, params) {
         console.log(event);
+        const notification = Notification.get(event);
+
+        if (this.slackUrl)
+            notification.sendToSlack(this.slackUrl);
+
         this.getSubscriptions(event)
             .then(recipients => {
-                return Notification.get(event)
-                                   .sendTo(recipients);
+                return notification.sendTo(recipients);
             }).catch((e) => {
                 console.error(e);
             });
