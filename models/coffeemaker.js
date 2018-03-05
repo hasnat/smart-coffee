@@ -39,7 +39,7 @@ export default class CoffeeMaker extends ActiveRecord {
                 powerOnThresholdWatts: 5,
                 actionThresholdWatts: 150,
                 finishingSeconds: 30,
-                finishingSecondsPerBatch: 60 // this is untested
+                finishingSecondsPerBatch: 90 // this is untested
             }, props.calibration || {});
         //}
 
