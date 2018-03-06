@@ -137,7 +137,7 @@ export default class CoffeeMaker extends ActiveRecord {
         console.log(`${this.domain}: ${event}`);
         const notification = Notification.get(event);
 
-        if (this.slackUrl)
+        if (this.slackUrl && ['starting', 'finished', 'power-off'].indexOf(event) !== -1)
             notification.sendToSlack(this.slackUrl);
 
         this.getSubscriptions(event)
